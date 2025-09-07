@@ -21,7 +21,7 @@ const Navbar = () => {
             <span>Home</span>
           </Link>
           
-          <Link href="/map" className="flex items-center space-x-2 text-foreground hover:text-primary">
+          <Link href="/maptool" className="flex items-center space-x-2 text-foreground hover:text-primary">
             <Map className="w-5 h-5" />
             <span>Map Tool</span>
           </Link>
