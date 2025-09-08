@@ -37,7 +37,7 @@ const TouristList = () => {
   return (
     <Card className="h-full">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex justify-center items-center gap-2">
           <AlertTriangle className="w-5 h-5" />
           Tourist Safety Status
         </CardTitle>

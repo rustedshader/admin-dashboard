@@ -23,7 +23,7 @@ const Home = () => {
           {/* Center - Map */}
           <div className="col-span-6">
             <div className="h-full bg-card rounded-lg border border-border p-4 shadow-lg">
-              <h2 className="text-xl font-semibold mb-4 text-card-foreground">Tourist Movement Map</h2>
+              <h2 className="text-xl flex justify-center font-semibold mb-4 text-card-foreground">Tourist Movement Map</h2>
               <MapComponent />
             </div>
           </div>
