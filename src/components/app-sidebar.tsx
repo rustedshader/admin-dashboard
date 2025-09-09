@@ -75,8 +75,26 @@ export function AppSidebar() {
   const { data: session } = useSession();
   const pathname = usePathname();
 
-  const handleLogout = () => {
-    signOut({ callbackUrl: "/login" });
+  const handleLogout = async () => {
+    try {
+      // Call backend logout endpoint to revoke refresh token
+      if (session?.refreshToken) {
+        await fetch("/api/auth/logout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            refresh_token: session.refreshToken,
+          }),
+        });
+      }
+    } catch (error) {
+      console.error("Error during logout:", error);
+    } finally {
+      // Always sign out from NextAuth regardless of backend call success
+      signOut({ callbackUrl: "/login" });
+    }
   };
 
   return (

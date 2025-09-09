@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { useSessionValidation } from "@/hooks/useAuth";
 
 interface LayoutProviderProps {
   children: React.ReactNode;
@@ -12,6 +13,9 @@ interface LayoutProviderProps {
 export function LayoutProvider({ children }: LayoutProviderProps) {
   const { data: session, status } = useSession();
   const pathname = usePathname();
+
+  // Add session validation
+  useSessionValidation();
 
   // Pages that shouldn't have the sidebar
   const noSidebarPages = ["/login"];

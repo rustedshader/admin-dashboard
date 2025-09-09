@@ -27,6 +27,58 @@ interface JWTPayload {
   exp: number;
 }
 
+async function refreshAccessToken(token: any): Promise<any> {
+  try {
+    if (!token.refreshToken) {
+      throw new Error("No refresh token available");
+    }
+
+    const response = await fetch("https://api.rustedshader.com/auth/refresh", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        refresh_token: token.refreshToken,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to refresh token");
+    }
+
+    const refreshedTokens = await response.json();
+
+    // Decode the new JWT to get expiration time
+    try {
+      const tokenPayload: JWTPayload = JSON.parse(
+        atob(refreshedTokens.access_token.split(".")[1])
+      );
+
+      return {
+        ...token,
+        accessToken: refreshedTokens.access_token,
+        accessTokenExpires: tokenPayload.exp * 1000,
+        error: undefined,
+      };
+    } catch (decodeError) {
+      console.error("Failed to decode refreshed JWT:", decodeError);
+      return {
+        ...token,
+        accessToken: refreshedTokens.access_token,
+        accessTokenExpires: Date.now() + 60 * 60 * 1000, // Default 1 hour
+        error: undefined,
+      };
+    }
+  } catch (error) {
+    console.error("Error refreshing access token:", error);
+    return {
+      ...token,
+      error: "RefreshAccessTokenError",
+    };
+  }
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -107,19 +159,42 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user) {
+      // Initial sign in
+      if (user && user.accessToken) {
         token.accessToken = user.accessToken;
         token.refreshToken = user.refreshToken;
         token.role = user.role;
         token.userInfo = user.userInfo;
+
+        // Decode JWT to get expiration time
+        try {
+          const tokenPayload: JWTPayload = JSON.parse(
+            atob(user.accessToken.split(".")[1])
+          );
+          token.accessTokenExpires = tokenPayload.exp * 1000; // Convert to milliseconds
+        } catch (error) {
+          console.error("Failed to decode JWT:", error);
+          // Set a default expiration time (1 hour from now)
+          token.accessTokenExpires = Date.now() + 60 * 60 * 1000;
+        }
+
+        return token;
       }
-      return token;
+
+      // Return previous token if the access token has not expired yet
+      if (token.accessTokenExpires && Date.now() < token.accessTokenExpires) {
+        return token;
+      }
+
+      // Access token has expired, try to refresh it
+      return await refreshAccessToken(token);
     },
     async session({ session, token }) {
       session.accessToken = token.accessToken;
       session.refreshToken = token.refreshToken;
       session.role = token.role;
       session.userInfo = token.userInfo;
+      session.error = token.error;
       return session;
     },
   },

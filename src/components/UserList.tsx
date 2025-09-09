@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useAuthenticatedFetch, useSessionValidation } from "@/hooks/useAuth";
 import {
   Table,
   TableBody,
@@ -64,7 +64,12 @@ interface UserListProps {
 }
 
 export function UserList({ onUserSelect }: UserListProps) {
-  const { data: session } = useSession();
+  const {
+    authenticatedFetch,
+    isAuthenticated,
+    isLoading: authLoading,
+  } = useAuthenticatedFetch();
+  useSessionValidation();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -83,7 +88,7 @@ export function UserList({ onUserSelect }: UserListProps) {
     search: string = "",
     status: string = ""
   ) => {
-    if (!session?.accessToken) return;
+    if (!isAuthenticated || authLoading) return;
 
     setLoading(true);
     try {
@@ -95,11 +100,7 @@ export function UserList({ onUserSelect }: UserListProps) {
       if (search) params.append("search", search);
       if (status && status !== "all") params.append("status", status);
 
-      const response = await fetch(`/api/users/list?${params}`, {
-        headers: {
-          Authorization: `Bearer ${session.accessToken}`,
-        },
-      });
+      const response = await authenticatedFetch(`/api/users/list?${params}`);
 
       if (response.ok) {
         const data: UserListResponse = await response.json();
@@ -124,8 +125,10 @@ export function UserList({ onUserSelect }: UserListProps) {
   };
 
   useEffect(() => {
-    fetchUsers();
-  }, [session]);
+    if (isAuthenticated && !authLoading) {
+      fetchUsers();
+    }
+  }, [isAuthenticated, authLoading]);
 
   const handleSearch = () => {
     setCurrentPage(1);

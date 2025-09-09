@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useSession } from "next-auth/react";
+import { useAuthenticatedFetch, useSessionValidation } from "@/hooks/useAuth";
 import {
   Dialog,
   DialogContent,
@@ -57,23 +57,22 @@ export function UserDetailModal({
   onClose,
   onUserUpdate,
 }: UserDetailModalProps) {
-  const { data: session } = useSession();
+  const { authenticatedFetch } = useAuthenticatedFetch();
+  useSessionValidation();
   const [isLoading, setIsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   if (!user) return null;
 
   const handleVerifyUser = async () => {
-    if (!session?.accessToken) return;
-
     setActionLoading("verify");
     try {
-      const response = await fetch(`/api/users/${user.id}/verify`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${session.accessToken}`,
-        },
-      });
+      const response = await authenticatedFetch(
+        `/api/users/${user.id}/verify`,
+        {
+          method: "POST",
+        }
+      );
 
       if (response.ok) {
         toast.success("User verified successfully");
@@ -91,16 +90,14 @@ export function UserDetailModal({
   };
 
   const handleIssueBlockchainId = async () => {
-    if (!session?.accessToken) return;
-
     setActionLoading("blockchain");
     try {
-      const response = await fetch(`/api/users/${user.id}/blockchain-id`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${session.accessToken}`,
-        },
-      });
+      const response = await authenticatedFetch(
+        `/api/users/${user.id}/blockchain-id`,
+        {
+          method: "POST",
+        }
+      );
 
       if (response.ok) {
         toast.success("Blockchain ID issued successfully");
@@ -118,14 +115,11 @@ export function UserDetailModal({
   };
 
   const handleToggleUserStatus = async () => {
-    if (!session?.accessToken) return;
-
     setActionLoading("status");
     try {
-      const response = await fetch(`/api/users/${user.id}`, {
+      const response = await authenticatedFetch(`/api/users/${user.id}`, {
         method: "PATCH",
         headers: {
-          Authorization: `Bearer ${session.accessToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
