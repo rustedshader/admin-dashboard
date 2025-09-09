@@ -1,13 +1,27 @@
-'use client'
+"use client";
 
 import { useState } from "react";
-import { Car, Hotel, MapPin, Phone, Star, Users, Filter, Search } from "lucide-react";
-import Navbar from "@/components/Navbar";
+import {
+  Car,
+  Hotel,
+  MapPin,
+  Phone,
+  Star,
+  Users,
+  Filter,
+  Search,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Mock data for registered services
@@ -20,7 +34,7 @@ const hotels = [
     price: "₹5,000/night",
     contact: "+91 98765 43210",
     amenities: ["WiFi", "Restaurant", "Pool", "Parking"],
-    image: "/placeholder.svg"
+    image: "/placeholder.svg",
   },
   {
     id: 2,
@@ -30,7 +44,7 @@ const hotels = [
     price: "₹3,500/night",
     contact: "+91 98765 43211",
     amenities: ["WiFi", "Restaurant", "Spa", "Garden"],
-    image: "/placeholder.svg"
+    image: "/placeholder.svg",
   },
   {
     id: 3,
@@ -40,8 +54,8 @@ const hotels = [
     price: "₹2,800/night",
     contact: "+91 98765 43212",
     amenities: ["WiFi", "Restaurant", "Pool"],
-    image: "/placeholder.svg"
-  }
+    image: "/placeholder.svg",
+  },
 ];
 
 const drivers = [
@@ -54,7 +68,7 @@ const drivers = [
     rate: "₹12/km",
     contact: "+91 98765 54321",
     languages: ["Hindi", "English"],
-    routes: ["Delhi-Agra", "Delhi-Jaipur"]
+    routes: ["Delhi-Agra", "Delhi-Jaipur"],
   },
   {
     id: 2,
@@ -65,7 +79,7 @@ const drivers = [
     rate: "₹15/km",
     contact: "+91 98765 54322",
     languages: ["Hindi", "English", "Punjabi"],
-    routes: ["Delhi-Manali", "Delhi-Shimla"]
+    routes: ["Delhi-Manali", "Delhi-Shimla"],
   },
   {
     id: 3,
@@ -76,8 +90,8 @@ const drivers = [
     rate: "₹10/km",
     contact: "+91 98765 54323",
     languages: ["Hindi", "English"],
-    routes: ["Local City Tours"]
-  }
+    routes: ["Local City Tours"],
+  },
 ];
 
 const guides = [
@@ -90,7 +104,7 @@ const guides = [
     rate: "₹1,500/day",
     contact: "+91 98765 65432",
     languages: ["Hindi", "English", "French"],
-    areas: ["Delhi", "Agra", "Jaipur"]
+    areas: ["Delhi", "Agra", "Jaipur"],
   },
   {
     id: 2,
@@ -101,8 +115,8 @@ const guides = [
     rate: "₹2,000/day",
     contact: "+91 98765 65433",
     languages: ["Hindi", "English", "German"],
-    areas: ["Himachal", "Uttarakhand"]
-  }
+    areas: ["Himachal", "Uttarakhand"],
+  },
 ];
 
 const Transport = () => {
@@ -111,28 +125,46 @@ const Transport = () => {
   const [activeTab, setActiveTab] = useState("hotels");
 
   // Filter functions
-  const filteredHotels = hotels.filter(hotel => {
-    const matchesSearch = hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         hotel.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesLocation = !filterLocation || filterLocation === "all" || hotel.location.toLowerCase().includes(filterLocation.toLowerCase());
+  const filteredHotels = hotels.filter((hotel) => {
+    const matchesSearch =
+      hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      hotel.location.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesLocation =
+      !filterLocation ||
+      filterLocation === "all" ||
+      hotel.location.toLowerCase().includes(filterLocation.toLowerCase());
     return matchesSearch && matchesLocation;
   });
 
-  const filteredDrivers = drivers.filter(driver => {
-    const matchesSearch = driver.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         driver.vehicle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         driver.routes.some(route => route.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesLocation = !filterLocation || filterLocation === "all" || driver.routes.some(route => 
-      route.toLowerCase().includes(filterLocation.toLowerCase()));
+  const filteredDrivers = drivers.filter((driver) => {
+    const matchesSearch =
+      driver.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      driver.vehicle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      driver.routes.some((route) =>
+        route.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    const matchesLocation =
+      !filterLocation ||
+      filterLocation === "all" ||
+      driver.routes.some((route) =>
+        route.toLowerCase().includes(filterLocation.toLowerCase())
+      );
     return matchesSearch && matchesLocation;
   });
 
-  const filteredGuides = guides.filter(guide => {
-    const matchesSearch = guide.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         guide.specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         guide.areas.some(area => area.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesLocation = !filterLocation || filterLocation === "all" || guide.areas.some(area => 
-      area.toLowerCase().includes(filterLocation.toLowerCase()));
+  const filteredGuides = guides.filter((guide) => {
+    const matchesSearch =
+      guide.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      guide.specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      guide.areas.some((area) =>
+        area.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    const matchesLocation =
+      !filterLocation ||
+      filterLocation === "all" ||
+      guide.areas.some((area) =>
+        area.toLowerCase().includes(filterLocation.toLowerCase())
+      );
     return matchesSearch && matchesLocation;
   });
 
@@ -140,19 +172,25 @@ const Transport = () => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-        className={`w-4 h-4 ${i < Math.floor(rating) ? "text-yellow-400 fill-current" : "text-gray-300"}`}
+        className={`w-4 h-4 ${
+          i < Math.floor(rating)
+            ? "text-yellow-400 fill-current"
+            : "text-gray-300"
+        }`}
       />
     ));
   };
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-      
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-4">Transport Directory</h1>
-          <p className="text-xl text-white">Registered hotels, drivers, guides, and transport services</p>
+          <h1 className="text-4xl font-bold text-white mb-4">
+            Transport Directory
+          </h1>
+          <p className="text-xl text-white">
+            Registered hotels, drivers, guides, and transport services
+          </p>
         </div>
 
         {/* Search and Filter Section */}
@@ -204,50 +242,70 @@ const Transport = () => {
             {filteredHotels.length === 0 ? (
               <div className="text-center py-12">
                 <Hotel className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-foreground mb-2">No Hotels Found</h3>
-                <p className="text-muted-foreground">Try adjusting your search or filter criteria.</p>
+                <h3 className="text-xl font-semibold text-foreground mb-2">
+                  No Hotels Found
+                </h3>
+                <p className="text-muted-foreground">
+                  Try adjusting your search or filter criteria.
+                </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredHotels.map((hotel) => (
-                <Card key={hotel.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-lg">{hotel.name}</CardTitle>
-                        <div className="flex items-center gap-1 mt-1">
-                          <MapPin className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">{hotel.location}</span>
+                  <Card
+                    key={hotel.id}
+                    className="hover:shadow-lg transition-shadow"
+                  >
+                    <CardHeader className="pb-3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-lg">
+                            {hotel.name}
+                          </CardTitle>
+                          <div className="flex items-center gap-1 mt-1">
+                            <MapPin className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-sm text-muted-foreground">
+                              {hotel.location}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                      <Badge variant="secondary" className="text-primary font-semibold">
-                        {hotel.price}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="flex">{renderStars(hotel.rating)}</div>
-                      <span className="text-sm font-medium">{hotel.rating}</span>
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-1 mb-3">
-                      {hotel.amenities.map((amenity, idx) => (
-                        <Badge key={idx} variant="outline" className="text-xs">
-                          {amenity}
+                        <Badge
+                          variant="secondary"
+                          className="text-primary font-semibold"
+                        >
+                          {hotel.price}
                         </Badge>
-                      ))}
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1">
-                        <Phone className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm">{hotel.contact}</span>
                       </div>
-                      <Button size="sm">Book Now</Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="flex">{renderStars(hotel.rating)}</div>
+                        <span className="text-sm font-medium">
+                          {hotel.rating}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {hotel.amenities.map((amenity, idx) => (
+                          <Badge
+                            key={idx}
+                            variant="outline"
+                            className="text-xs"
+                          >
+                            {amenity}
+                          </Badge>
+                        ))}
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1">
+                          <Phone className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm">{hotel.contact}</span>
+                        </div>
+                        <Button size="sm">Book Now</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             )}
@@ -258,65 +316,95 @@ const Transport = () => {
             {filteredDrivers.length === 0 ? (
               <div className="text-center py-12">
                 <Car className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-foreground mb-2">No Drivers Found</h3>
-                <p className="text-muted-foreground">Try adjusting your search or filter criteria.</p>
+                <h3 className="text-xl font-semibold text-foreground mb-2">
+                  No Drivers Found
+                </h3>
+                <p className="text-muted-foreground">
+                  Try adjusting your search or filter criteria.
+                </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredDrivers.map((driver) => (
-                <Card key={driver.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-lg">{driver.name}</CardTitle>
-                        <div className="flex items-center gap-1 mt-1">
-                          <Car className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">{driver.vehicle}</span>
+                  <Card
+                    key={driver.id}
+                    className="hover:shadow-lg transition-shadow"
+                  >
+                    <CardHeader className="pb-3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-lg">
+                            {driver.name}
+                          </CardTitle>
+                          <div className="flex items-center gap-1 mt-1">
+                            <Car className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-sm text-muted-foreground">
+                              {driver.vehicle}
+                            </span>
+                          </div>
+                        </div>
+                        <Badge
+                          variant="secondary"
+                          className="text-primary font-semibold"
+                        >
+                          {driver.rate}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="flex">{renderStars(driver.rating)}</div>
+                        <span className="text-sm font-medium">
+                          {driver.rating}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          ({driver.experience})
+                        </span>
+                      </div>
+
+                      <div className="mb-3">
+                        <p className="text-sm text-muted-foreground mb-1">
+                          Languages:
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          {driver.languages.map((lang, idx) => (
+                            <Badge
+                              key={idx}
+                              variant="outline"
+                              className="text-xs"
+                            >
+                              {lang}
+                            </Badge>
+                          ))}
                         </div>
                       </div>
-                      <Badge variant="secondary" className="text-primary font-semibold">
-                        {driver.rate}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="flex">{renderStars(driver.rating)}</div>
-                      <span className="text-sm font-medium">{driver.rating}</span>
-                      <span className="text-xs text-muted-foreground">({driver.experience})</span>
-                    </div>
-                    
-                    <div className="mb-3">
-                      <p className="text-sm text-muted-foreground mb-1">Languages:</p>
-                      <div className="flex flex-wrap gap-1">
-                        {driver.languages.map((lang, idx) => (
-                          <Badge key={idx} variant="outline" className="text-xs">
-                            {lang}
-                          </Badge>
-                        ))}
+
+                      <div className="mb-3">
+                        <p className="text-sm text-muted-foreground mb-1">
+                          Routes:
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          {driver.routes.map((route, idx) => (
+                            <Badge
+                              key={idx}
+                              variant="secondary"
+                              className="text-xs"
+                            >
+                              {route}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div className="mb-3">
-                      <p className="text-sm text-muted-foreground mb-1">Routes:</p>
-                      <div className="flex flex-wrap gap-1">
-                        {driver.routes.map((route, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs">
-                            {route}
-                          </Badge>
-                        ))}
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1">
+                          <Phone className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm">{driver.contact}</span>
+                        </div>
+                        <Button size="sm">Contact</Button>
                       </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1">
-                        <Phone className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm">{driver.contact}</span>
-                      </div>
-                      <Button size="sm">Contact</Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             )}
@@ -327,65 +415,95 @@ const Transport = () => {
             {filteredGuides.length === 0 ? (
               <div className="text-center py-12">
                 <Users className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-foreground mb-2">No Tour Guides Found</h3>
-                <p className="text-muted-foreground">Try adjusting your search or filter criteria.</p>
+                <h3 className="text-xl font-semibold text-foreground mb-2">
+                  No Tour Guides Found
+                </h3>
+                <p className="text-muted-foreground">
+                  Try adjusting your search or filter criteria.
+                </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredGuides.map((guide) => (
-                <Card key={guide.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-lg">{guide.name}</CardTitle>
-                        <div className="flex items-center gap-1 mt-1">
-                          <Users className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">{guide.specialization}</span>
+                  <Card
+                    key={guide.id}
+                    className="hover:shadow-lg transition-shadow"
+                  >
+                    <CardHeader className="pb-3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-lg">
+                            {guide.name}
+                          </CardTitle>
+                          <div className="flex items-center gap-1 mt-1">
+                            <Users className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-sm text-muted-foreground">
+                              {guide.specialization}
+                            </span>
+                          </div>
+                        </div>
+                        <Badge
+                          variant="secondary"
+                          className="text-primary font-semibold"
+                        >
+                          {guide.rate}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="flex">{renderStars(guide.rating)}</div>
+                        <span className="text-sm font-medium">
+                          {guide.rating}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          ({guide.experience})
+                        </span>
+                      </div>
+
+                      <div className="mb-3">
+                        <p className="text-sm text-muted-foreground mb-1">
+                          Languages:
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          {guide.languages.map((lang, idx) => (
+                            <Badge
+                              key={idx}
+                              variant="outline"
+                              className="text-xs"
+                            >
+                              {lang}
+                            </Badge>
+                          ))}
                         </div>
                       </div>
-                      <Badge variant="secondary" className="text-primary font-semibold">
-                        {guide.rate}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="flex">{renderStars(guide.rating)}</div>
-                      <span className="text-sm font-medium">{guide.rating}</span>
-                      <span className="text-xs text-muted-foreground">({guide.experience})</span>
-                    </div>
-                    
-                    <div className="mb-3">
-                      <p className="text-sm text-muted-foreground mb-1">Languages:</p>
-                      <div className="flex flex-wrap gap-1">
-                        {guide.languages.map((lang, idx) => (
-                          <Badge key={idx} variant="outline" className="text-xs">
-                            {lang}
-                          </Badge>
-                        ))}
+
+                      <div className="mb-3">
+                        <p className="text-sm text-muted-foreground mb-1">
+                          Areas:
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          {guide.areas.map((area, idx) => (
+                            <Badge
+                              key={idx}
+                              variant="secondary"
+                              className="text-xs"
+                            >
+                              {area}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div className="mb-3">
-                      <p className="text-sm text-muted-foreground mb-1">Areas:</p>
-                      <div className="flex flex-wrap gap-1">
-                        {guide.areas.map((area, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs">
-                            {area}
-                          </Badge>
-                        ))}
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1">
+                          <Phone className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm">{guide.contact}</span>
+                        </div>
+                        <Button size="sm">Hire Guide</Button>
                       </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1">
-                        <Phone className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm">{guide.contact}</span>
-                      </div>
-                      <Button size="sm">Hire Guide</Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             )}
@@ -396,13 +514,22 @@ const Transport = () => {
         <div className="mt-12 text-center">
           <Card className="max-w-2xl mx-auto">
             <CardContent className="pt-6">
-              <h3 className="text-2xl font-bold mb-4">Want to Register Your Service?</h3>
+              <h3 className="text-2xl font-bold mb-4">
+                Want to Register Your Service?
+              </h3>
               <p className="text-muted-foreground mb-6">
-                Join our directory and connect with thousands of tourists looking for reliable transport services.
+                Join our directory and connect with thousands of tourists
+                looking for reliable transport services.
               </p>
-              <Button size="lg" className="mr-4">Register as Hotel</Button>
-              <Button size="lg" variant="outline" className="mr-4">Register as Driver</Button>
-              <Button size="lg" variant="outline">Register as Guide</Button>
+              <Button size="lg" className="mr-4">
+                Register as Hotel
+              </Button>
+              <Button size="lg" variant="outline" className="mr-4">
+                Register as Driver
+              </Button>
+              <Button size="lg" variant="outline">
+                Register as Guide
+              </Button>
             </CardContent>
           </Card>
         </div>
