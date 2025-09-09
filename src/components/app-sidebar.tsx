@@ -11,6 +11,7 @@ import {
   LogOut,
   Users,
   Shield,
+  Radio,
 } from "lucide-react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
@@ -40,6 +41,11 @@ const mainItems = [
     title: "User Management",
     url: "/users",
     icon: Users,
+  },
+  {
+    title: "Tracking Devices",
+    url: "/transport",
+    icon: Radio,
   },
   {
     title: "Geofencing",
@@ -74,11 +80,6 @@ const toolItems = [
     title: "Provide Help",
     url: "/help",
     icon: HelpCircle,
-  },
-  {
-    title: "Transport Guide",
-    url: "/transport",
-    icon: Plane,
   },
 ];
 

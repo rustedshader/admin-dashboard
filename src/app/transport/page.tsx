@@ -1,20 +1,26 @@
 "use client";
 
-import { useState } from "react";
-import {
-  Car,
-  Hotel,
-  MapPin,
-  Phone,
-  Star,
-  Users,
-  Filter,
-  Search,
-} from "lucide-react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -22,520 +28,375 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuthenticatedFetch } from "@/hooks/useAuth";
+import { useSession } from "next-auth/react";
+import { toast } from "sonner";
+import {
+  Plus,
+  Radio,
+  Eye,
+  EyeOff,
+  Copy,
+  Settings,
+  Activity,
+  Battery,
+  Wifi,
+} from "lucide-react";
+import Link from "next/link";
 
-// Mock data for registered services
-const hotels = [
-  {
-    id: 1,
-    name: "Grand Palace Hotel",
-    location: "New Delhi",
-    rating: 4.8,
-    price: "₹5,000/night",
-    contact: "+91 98765 43210",
-    amenities: ["WiFi", "Restaurant", "Pool", "Parking"],
-    image: "/placeholder.svg",
-  },
-  {
-    id: 2,
-    name: "Mountain View Resort",
-    location: "Shimla",
-    rating: 4.5,
-    price: "₹3,500/night",
-    contact: "+91 98765 43211",
-    amenities: ["WiFi", "Restaurant", "Spa", "Garden"],
-    image: "/placeholder.svg",
-  },
-  {
-    id: 3,
-    name: "Heritage Inn",
-    location: "Jaipur",
-    rating: 4.2,
-    price: "₹2,800/night",
-    contact: "+91 98765 43212",
-    amenities: ["WiFi", "Restaurant", "Pool"],
-    image: "/placeholder.svg",
-  },
-];
+interface TrackingDevice {
+  id: number;
+  device_id: string;
+  api_key: string;
+  status: "active" | "inactive" | "maintenance";
+  treck_id: number | null;
+  created_at: number;
+}
 
-const drivers = [
-  {
-    id: 1,
-    name: "Rajesh Kumar",
-    vehicle: "Toyota Innova",
-    experience: "8 years",
-    rating: 4.9,
-    rate: "₹12/km",
-    contact: "+91 98765 54321",
-    languages: ["Hindi", "English"],
-    routes: ["Delhi-Agra", "Delhi-Jaipur"],
-  },
-  {
-    id: 2,
-    name: "Suresh Singh",
-    vehicle: "Mahindra Scorpio",
-    experience: "12 years",
-    rating: 4.7,
-    rate: "₹15/km",
-    contact: "+91 98765 54322",
-    languages: ["Hindi", "English", "Punjabi"],
-    routes: ["Delhi-Manali", "Delhi-Shimla"],
-  },
-  {
-    id: 3,
-    name: "Amit Sharma",
-    vehicle: "Swift Dzire",
-    experience: "5 years",
-    rating: 4.6,
-    rate: "₹10/km",
-    contact: "+91 98765 54323",
-    languages: ["Hindi", "English"],
-    routes: ["Local City Tours"],
-  },
-];
+interface TrackingDeviceStats {
+  total_devices: number;
+  active_devices: number;
+  inactive_devices: number;
+  maintenance_devices: number;
+}
 
-const guides = [
-  {
-    id: 1,
-    name: "Priya Verma",
-    specialization: "Historical Sites",
-    experience: "6 years",
-    rating: 4.8,
-    rate: "₹1,500/day",
-    contact: "+91 98765 65432",
-    languages: ["Hindi", "English", "French"],
-    areas: ["Delhi", "Agra", "Jaipur"],
-  },
-  {
-    id: 2,
-    name: "Vikram Joshi",
-    specialization: "Adventure Tourism",
-    experience: "10 years",
-    rating: 4.9,
-    rate: "₹2,000/day",
-    contact: "+91 98765 65433",
-    languages: ["Hindi", "English", "German"],
-    areas: ["Himachal", "Uttarakhand"],
-  },
-];
+export default function TrackingDevicesPage() {
+  const [devices, setDevices] = useState<TrackingDevice[]>([]);
+  const [stats, setStats] = useState<TrackingDeviceStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedDevice, setSelectedDevice] = useState<TrackingDevice | null>(
+    null
+  );
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [newStatus, setNewStatus] = useState<string>("");
+  const [visibleApiKeys, setVisibleApiKeys] = useState<Set<string>>(new Set());
 
-const Transport = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterLocation, setFilterLocation] = useState("all");
-  const [activeTab, setActiveTab] = useState("hotels");
+  const { authenticatedFetch } = useAuthenticatedFetch();
+  const { status: sessionStatus } = useSession();
 
-  // Filter functions
-  const filteredHotels = hotels.filter((hotel) => {
-    const matchesSearch =
-      hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      hotel.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesLocation =
-      !filterLocation ||
-      filterLocation === "all" ||
-      hotel.location.toLowerCase().includes(filterLocation.toLowerCase());
-    return matchesSearch && matchesLocation;
-  });
+  const fetchData = async () => {
+    try {
+      setLoading(true);
 
-  const filteredDrivers = drivers.filter((driver) => {
-    const matchesSearch =
-      driver.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      driver.vehicle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      driver.routes.some((route) =>
-        route.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    const matchesLocation =
-      !filterLocation ||
-      filterLocation === "all" ||
-      driver.routes.some((route) =>
-        route.toLowerCase().includes(filterLocation.toLowerCase())
-      );
-    return matchesSearch && matchesLocation;
-  });
+      const response = await authenticatedFetch("/api/tracking-device/list");
 
-  const filteredGuides = guides.filter((guide) => {
-    const matchesSearch =
-      guide.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      guide.specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      guide.areas.some((area) =>
-        area.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    const matchesLocation =
-      !filterLocation ||
-      filterLocation === "all" ||
-      guide.areas.some((area) =>
-        area.toLowerCase().includes(filterLocation.toLowerCase())
-      );
-    return matchesSearch && matchesLocation;
-  });
+      if (response.ok) {
+        const data = await response.json();
+        setDevices(data.devices || []);
 
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`w-4 h-4 ${
-          i < Math.floor(rating)
-            ? "text-yellow-400 fill-current"
-            : "text-gray-300"
-        }`}
-      />
-    ));
+        // Calculate stats
+        const totalDevices = data.devices?.length || 0;
+        const activeDevices =
+          data.devices?.filter(
+            (device: TrackingDevice) => device.status === "active"
+          ).length || 0;
+        const inactiveDevices =
+          data.devices?.filter(
+            (device: TrackingDevice) => device.status === "inactive"
+          ).length || 0;
+        const maintenanceDevices =
+          data.devices?.filter(
+            (device: TrackingDevice) => device.status === "maintenance"
+          ).length || 0;
+
+        setStats({
+          total_devices: totalDevices,
+          active_devices: activeDevices,
+          inactive_devices: inactiveDevices,
+          maintenance_devices: maintenanceDevices,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching tracking devices:", error);
+      toast.error("Failed to load tracking devices");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  useEffect(() => {
+    if (sessionStatus === "authenticated") {
+      fetchData();
+    }
+  }, [sessionStatus]);
+
+  const handleUpdateStatus = async () => {
+    if (!selectedDevice || !newStatus) return;
+
+    try {
+      const response = await authenticatedFetch(
+        `/api/tracking-device/${selectedDevice.device_id}/status`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      );
+
+      if (response.ok) {
+        toast.success("Device status updated successfully");
+        setIsStatusModalOpen(false);
+        setSelectedDevice(null);
+        setNewStatus("");
+        fetchData();
+      } else {
+        const error = await response.json();
+        toast.error(error.error || "Failed to update device status");
+      }
+    } catch (error) {
+      console.error("Error updating device status:", error);
+      toast.error("Failed to update device status");
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "active":
+        return <Badge className="bg-green-100 text-green-800">Active</Badge>;
+      case "inactive":
+        return <Badge className="bg-red-100 text-red-800">Inactive</Badge>;
+      case "maintenance":
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800">Maintenance</Badge>
+        );
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
+  };
+
+  const toggleApiKeyVisibility = (deviceId: string) => {
+    setVisibleApiKeys((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(deviceId)) {
+        newSet.delete(deviceId);
+      } else {
+        newSet.add(deviceId);
+      }
+      return newSet;
+    });
+  };
+
+  const copyApiKey = (apiKey: string) => {
+    navigator.clipboard.writeText(apiKey);
+    toast.success("API key copied to clipboard");
+  };
+
+  const formatApiKey = (apiKey: string, deviceId: string) => {
+    if (visibleApiKeys.has(deviceId)) {
+      return apiKey;
+    }
+    return `${apiKey.substring(0, 8)}${"*".repeat(
+      Math.max(0, apiKey.length - 16)
+    )}${apiKey.substring(apiKey.length - 8)}`;
+  };
+
+  if (loading || sessionStatus === "loading") {
+    return <div className="p-6">Loading tracking devices...</div>;
+  }
+
+  if (sessionStatus === "unauthenticated") {
+    return (
+      <div className="p-6">
+        Please log in to access tracking device management.
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-4">
-            Transport Directory
-          </h1>
-          <p className="text-xl text-white">
-            Registered hotels, drivers, guides, and transport services
-          </p>
-        </div>
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Tracking Device Management</h1>
+        <Link href="/transport/add">
+          <Button>
+            <Plus className="w-4 h-4 mr-2" />
+            Add New Device
+          </Button>
+        </Link>
+      </div>
 
-        {/* Search and Filter Section */}
-        <div className="mb-8 flex flex-col md:flex-row gap-4 items-center">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input
-              placeholder="Search services..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-white "
-            />
-          </div>
-          <Select value={filterLocation} onValueChange={setFilterLocation}>
-            <SelectTrigger className="w-48 bg-white">
-              <Filter className="w-4 h-4 mr-2" />
-              <SelectValue placeholder="Filter by location" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Locations</SelectItem>
-              <SelectItem value="delhi">Delhi</SelectItem>
-              <SelectItem value="jaipur">Jaipur</SelectItem>
-              <SelectItem value="agra">Agra</SelectItem>
-              <SelectItem value="shimla">Shimla</SelectItem>
-              <SelectItem value="manali">Manali</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Tabs for different services */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="hotels" className="flex items-center gap-2">
-              <Hotel className="w-4 h-4" />
-              Hotels
-            </TabsTrigger>
-            <TabsTrigger value="drivers" className="flex items-center gap-2">
-              <Car className="w-4 h-4" />
-              Drivers
-            </TabsTrigger>
-            <TabsTrigger value="guides" className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              Tour Guides
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Hotels Tab */}
-          <TabsContent value="hotels" className="mt-6">
-            {filteredHotels.length === 0 ? (
-              <div className="text-center py-12">
-                <Hotel className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-foreground mb-2">
-                  No Hotels Found
-                </h3>
-                <p className="text-muted-foreground">
-                  Try adjusting your search or filter criteria.
-                </p>
+      {/* Stats Cards */}
+      {stats && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Devices
+              </CardTitle>
+              <Radio className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.total_devices}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Active Devices
+              </CardTitle>
+              <Activity className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">
+                {stats.active_devices}
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredHotels.map((hotel) => (
-                  <Card
-                    key={hotel.id}
-                    className="hover:shadow-lg transition-shadow"
-                  >
-                    <CardHeader className="pb-3">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-lg">
-                            {hotel.name}
-                          </CardTitle>
-                          <div className="flex items-center gap-1 mt-1">
-                            <MapPin className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-sm text-muted-foreground">
-                              {hotel.location}
-                            </span>
-                          </div>
-                        </div>
-                        <Badge
-                          variant="secondary"
-                          className="text-primary font-semibold"
-                        >
-                          {hotel.price}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="flex">{renderStars(hotel.rating)}</div>
-                        <span className="text-sm font-medium">
-                          {hotel.rating}
-                        </span>
-                      </div>
-
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {hotel.amenities.map((amenity, idx) => (
-                          <Badge
-                            key={idx}
-                            variant="outline"
-                            className="text-xs"
-                          >
-                            {amenity}
-                          </Badge>
-                        ))}
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1">
-                          <Phone className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm">{hotel.contact}</span>
-                        </div>
-                        <Button size="sm">Book Now</Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Inactive Devices
+              </CardTitle>
+              <Battery className="h-4 w-4 text-red-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">
+                {stats.inactive_devices}
               </div>
-            )}
-          </TabsContent>
-
-          {/* Drivers Tab */}
-          <TabsContent value="drivers" className="mt-6">
-            {filteredDrivers.length === 0 ? (
-              <div className="text-center py-12">
-                <Car className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-foreground mb-2">
-                  No Drivers Found
-                </h3>
-                <p className="text-muted-foreground">
-                  Try adjusting your search or filter criteria.
-                </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Maintenance</CardTitle>
+              <Settings className="h-4 w-4 text-yellow-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-yellow-600">
+                {stats.maintenance_devices}
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredDrivers.map((driver) => (
-                  <Card
-                    key={driver.id}
-                    className="hover:shadow-lg transition-shadow"
-                  >
-                    <CardHeader className="pb-3">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-lg">
-                            {driver.name}
-                          </CardTitle>
-                          <div className="flex items-center gap-1 mt-1">
-                            <Car className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-sm text-muted-foreground">
-                              {driver.vehicle}
-                            </span>
-                          </div>
-                        </div>
-                        <Badge
-                          variant="secondary"
-                          className="text-primary font-semibold"
-                        >
-                          {driver.rate}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="flex">{renderStars(driver.rating)}</div>
-                        <span className="text-sm font-medium">
-                          {driver.rating}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          ({driver.experience})
-                        </span>
-                      </div>
-
-                      <div className="mb-3">
-                        <p className="text-sm text-muted-foreground mb-1">
-                          Languages:
-                        </p>
-                        <div className="flex flex-wrap gap-1">
-                          {driver.languages.map((lang, idx) => (
-                            <Badge
-                              key={idx}
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              {lang}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="mb-3">
-                        <p className="text-sm text-muted-foreground mb-1">
-                          Routes:
-                        </p>
-                        <div className="flex flex-wrap gap-1">
-                          {driver.routes.map((route, idx) => (
-                            <Badge
-                              key={idx}
-                              variant="secondary"
-                              className="text-xs"
-                            >
-                              {route}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1">
-                          <Phone className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm">{driver.contact}</span>
-                        </div>
-                        <Button size="sm">Contact</Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Tour Guides Tab */}
-          <TabsContent value="guides" className="mt-6">
-            {filteredGuides.length === 0 ? (
-              <div className="text-center py-12">
-                <Users className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-foreground mb-2">
-                  No Tour Guides Found
-                </h3>
-                <p className="text-muted-foreground">
-                  Try adjusting your search or filter criteria.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredGuides.map((guide) => (
-                  <Card
-                    key={guide.id}
-                    className="hover:shadow-lg transition-shadow"
-                  >
-                    <CardHeader className="pb-3">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-lg">
-                            {guide.name}
-                          </CardTitle>
-                          <div className="flex items-center gap-1 mt-1">
-                            <Users className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-sm text-muted-foreground">
-                              {guide.specialization}
-                            </span>
-                          </div>
-                        </div>
-                        <Badge
-                          variant="secondary"
-                          className="text-primary font-semibold"
-                        >
-                          {guide.rate}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="flex">{renderStars(guide.rating)}</div>
-                        <span className="text-sm font-medium">
-                          {guide.rating}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          ({guide.experience})
-                        </span>
-                      </div>
-
-                      <div className="mb-3">
-                        <p className="text-sm text-muted-foreground mb-1">
-                          Languages:
-                        </p>
-                        <div className="flex flex-wrap gap-1">
-                          {guide.languages.map((lang, idx) => (
-                            <Badge
-                              key={idx}
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              {lang}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="mb-3">
-                        <p className="text-sm text-muted-foreground mb-1">
-                          Areas:
-                        </p>
-                        <div className="flex flex-wrap gap-1">
-                          {guide.areas.map((area, idx) => (
-                            <Badge
-                              key={idx}
-                              variant="secondary"
-                              className="text-xs"
-                            >
-                              {area}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1">
-                          <Phone className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm">{guide.contact}</span>
-                        </div>
-                        <Button size="sm">Hire Guide</Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-
-        {/* Registration CTA */}
-        <div className="mt-12 text-center">
-          <Card className="max-w-2xl mx-auto">
-            <CardContent className="pt-6">
-              <h3 className="text-2xl font-bold mb-4">
-                Want to Register Your Service?
-              </h3>
-              <p className="text-muted-foreground mb-6">
-                Join our directory and connect with thousands of tourists
-                looking for reliable transport services.
-              </p>
-              <Button size="lg" className="mr-4">
-                Register as Hotel
-              </Button>
-              <Button size="lg" variant="outline" className="mr-4">
-                Register as Driver
-              </Button>
-              <Button size="lg" variant="outline">
-                Register as Guide
-              </Button>
             </CardContent>
           </Card>
         </div>
-      </div>
+      )}
+
+      {/* Devices Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Tracking Devices</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Device ID</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Trek ID</TableHead>
+                  <TableHead>API Key</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {devices.map((device, index) => (
+                  <TableRow key={device.id || `device-${index}`}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center space-x-2">
+                        <Radio className="w-4 h-4" />
+                        <span>{device.device_id}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{getStatusBadge(device.status)}</TableCell>
+                    <TableCell>
+                      {device.treck_id ? (
+                        <Badge variant="outline">Trek #{device.treck_id}</Badge>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          Unassigned
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2 max-w-xs">
+                        <code className="text-xs bg-gray-100 px-2 py-1 rounded truncate">
+                          {formatApiKey(device.api_key, device.device_id)}
+                        </code>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            toggleApiKeyVisibility(device.device_id)
+                          }
+                        >
+                          {visibleApiKeys.has(device.device_id) ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyApiKey(device.api_key)}
+                        >
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {new Date(device.created_at * 1000).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedDevice(device);
+                          setNewStatus(device.status);
+                          setIsStatusModalOpen(true);
+                        }}
+                      >
+                        <Settings className="w-4 h-4 mr-1" />
+                        Update Status
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Update Status Modal */}
+      <Dialog open={isStatusModalOpen} onOpenChange={setIsStatusModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Device Status</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="device">Device ID</Label>
+              <Input
+                id="device"
+                value={selectedDevice?.device_id || ""}
+                disabled
+              />
+            </div>
+            <div>
+              <Label htmlFor="status">Status</Label>
+              <Select value={newStatus} onValueChange={setNewStatus}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="maintenance">Maintenance</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsStatusModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleUpdateStatus}>Update Status</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
-};
-
-export default Transport;
+}
