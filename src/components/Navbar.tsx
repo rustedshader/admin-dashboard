@@ -1,4 +1,12 @@
-import { Bell, Map, Home, HelpCircle, Plane } from "lucide-react";
+import {
+  Bell,
+  Map,
+  Home,
+  HelpCircle,
+  Plane,
+  Plus,
+  Settings,
+} from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -11,32 +19,66 @@ const Navbar = () => {
           <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
             <Map className="w-6 h-6 text-primary-foreground" />
           </div>
-          <span className="text-2xl font-bold text-foreground">Paryatak Sarthi</span>
+          <span className="text-2xl font-bold text-foreground">
+            Paryatak Sarthi
+          </span>
         </div>
 
         {/* Navigation Links */}
         <div className="flex items-center space-x-6">
-          <Link href="/" className="flex items-center space-x-2 text-foreground hover:text-primary">
+          <Link
+            href="/"
+            className="flex items-center space-x-2 text-foreground hover:text-primary"
+          >
             <Home className="w-5 h-5" />
             <span>Home</span>
           </Link>
-          
-          <Link href="/maptool" className="flex items-center space-x-2 text-foreground hover:text-primary">
+
+          <Link
+            href="/places/add"
+            className="flex items-center space-x-2 text-foreground hover:text-primary"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Add Place</span>
+          </Link>
+
+          <Link
+            href="/places/manage"
+            className="flex items-center space-x-2 text-foreground hover:text-primary"
+          >
+            <Settings className="w-5 h-5" />
+            <span>Manage Places</span>
+          </Link>
+
+          <Link
+            href="/maptool"
+            className="flex items-center space-x-2 text-foreground hover:text-primary"
+          >
             <Map className="w-5 h-5" />
             <span>Map Tool</span>
           </Link>
-          
-          <Link href="/help" className="flex items-center space-x-2 text-foreground hover:text-primary">
+
+          <Link
+            href="/help"
+            className="flex items-center space-x-2 text-foreground hover:text-primary"
+          >
             <HelpCircle className="w-5 h-5" />
             <span>Provide Help</span>
           </Link>
-          
-          <Link href="/transport" className="flex items-center space-x-2 text-foreground hover:text-primary">
+
+          <Link
+            href="/transport"
+            className="flex items-center space-x-2 text-foreground hover:text-primary"
+          >
             <Plane className="w-5 h-5" />
             <span>Transport Guide</span>
           </Link>
-          
-          <Button variant="ghost" size="icon" className="relative border-rounded-full bg-black/10 hover:bg-black/20">
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative border-rounded-full bg-black/10 hover:bg-black/20"
+          >
             <Bell className="w-5 h-5" />
             <span className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full"></span>
           </Button>
