@@ -12,6 +12,7 @@ import {
   Users,
   Shield,
   Radio,
+  IdCard,
 } from "lucide-react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
@@ -41,6 +42,11 @@ const mainItems = [
     title: "User Management",
     url: "/users",
     icon: Users,
+  },
+  {
+    title: "Blockchain ID Issuance",
+    url: "/blockchain-id",
+    icon: IdCard,
   },
   {
     title: "Tracking Devices",

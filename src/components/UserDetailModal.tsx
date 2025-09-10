@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   CheckCircle,
   XCircle,
@@ -61,6 +63,11 @@ export function UserDetailModal({
   useSessionValidation();
   const [isLoading, setIsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [blockchainForm, setBlockchainForm] = useState({
+    itinerary_id: 1,
+    validity_days: 365,
+  });
+  const [showBlockchainForm, setShowBlockchainForm] = useState(false);
 
   if (!user) return null;
 
@@ -71,6 +78,14 @@ export function UserDetailModal({
         `/api/users/${user.id}/verify`,
         {
           method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            verified: true,
+            verification_notes: `KYC verified by admin for user ${user.first_name} ${user.last_name}`,
+            verification_date: new Date().toISOString(),
+          }),
         }
       );
 
@@ -79,7 +94,9 @@ export function UserDetailModal({
         onUserUpdate();
         onClose();
       } else {
+        const errorData = await response.json();
         toast.error("Failed to verify user");
+        console.error("Verification error details:", errorData);
       }
     } catch (error) {
       toast.error("Error verifying user");
@@ -96,6 +113,13 @@ export function UserDetailModal({
         `/api/users/${user.id}/blockchain-id`,
         {
           method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            itinerary_id: 1, // Default itinerary ID - this should be made configurable
+            validity_days: 365, // Default validity period - this should be made configurable
+          }),
         }
       );
 
@@ -104,7 +128,9 @@ export function UserDetailModal({
         onUserUpdate();
         onClose();
       } else {
+        const errorData = await response.json();
         toast.error("Failed to issue blockchain ID");
+        console.error("Blockchain ID error details:", errorData);
       }
     } catch (error) {
       toast.error("Error issuing blockchain ID");
@@ -117,15 +143,18 @@ export function UserDetailModal({
   const handleToggleUserStatus = async () => {
     setActionLoading("status");
     try {
-      const response = await authenticatedFetch(`/api/users/${user.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          is_active: !user.is_active,
-        }),
-      });
+      const response = await authenticatedFetch(
+        `/api/users/${user.id}/status`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            is_active: !user.is_active,
+          }),
+        }
+      );
 
       if (response.ok) {
         toast.success(

@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ user_id: string }> }
-) {
+export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get("authorization");
 
@@ -14,26 +11,26 @@ export async function POST(
       );
     }
 
-    const { user_id } = await params;
-    const body = await request.json();
+    const { searchParams } = new URL(request.url);
+    const limit = searchParams.get("limit") || "100";
+    const offset = searchParams.get("offset") || "0";
 
     const response = await fetch(
-      `https://api.rustedshader.com/users/admin/${user_id}/verify`,
+      `https://api.rustedshader.com/users/admin/unverified?limit=${limit}&offset=${offset}`,
       {
-        method: "POST",
+        method: "GET",
         headers: {
           accept: "application/json",
           Authorization: authHeader,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(body),
       }
     );
 
     if (!response.ok) {
       const errorData = await response.text();
       return NextResponse.json(
-        { error: "Failed to verify user", details: errorData },
+        { error: "Failed to fetch unverified users", details: errorData },
         { status: response.status }
       );
     }
@@ -41,7 +38,7 @@ export async function POST(
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error("User verification API error:", error);
+    console.error("Unverified users API error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

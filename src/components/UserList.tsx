@@ -33,6 +33,7 @@ import {
   UserPlus,
   UserX,
   Shield,
+  ExternalLink,
 } from "lucide-react";
 
 interface User {
@@ -61,9 +62,10 @@ interface UserListResponse {
 
 interface UserListProps {
   onUserSelect: (user: User) => void;
+  filter?: string;
 }
 
-export function UserList({ onUserSelect }: UserListProps) {
+export function UserList({ onUserSelect, filter = "all" }: UserListProps) {
   const {
     authenticatedFetch,
     isAuthenticated,
@@ -92,29 +94,55 @@ export function UserList({ onUserSelect }: UserListProps) {
 
     setLoading(true);
     try {
+      let endpoint = "/api/users/list";
       const params = new URLSearchParams({
-        page: page.toString(),
-        limit: "10",
+        limit: "50",
+        offset: ((page - 1) * 50).toString(),
       });
+
+      // Handle special filter cases
+      if (filter === "unverified") {
+        endpoint = "/api/users/unverified";
+      } else if (filter === "no-blockchain") {
+        endpoint = "/api/admin/users/no-blockchain-id";
+      } else {
+        // Regular filtering for the main endpoint
+        if (filter === "active") params.append("is_active_filter", "true");
+        if (filter === "inactive") params.append("is_active_filter", "false");
+        if (filter === "tourist") params.append("role_filter", "tourist");
+        if (filter === "guide") params.append("role_filter", "guide");
+      }
 
       if (search) params.append("search", search);
       if (status && status !== "all") params.append("status", status);
 
-      const response = await authenticatedFetch(`/api/users/list?${params}`);
+      const response = await authenticatedFetch(`${endpoint}?${params}`);
 
       if (response.ok) {
-        const data: UserListResponse = await response.json();
-        setUsers(data.users);
-        setCurrentPage(data.page);
-        setTotalPages(data.total_pages);
+        const data = await response.json();
+        // Handle both old and new API response formats
+        if (data.users) {
+          setUsers(data.users);
+          setTotalPages(
+            Math.ceil(
+              (data.total_count || data.total || data.users.length) / 50
+            )
+          );
+        } else if (Array.isArray(data)) {
+          setUsers(data);
+          setTotalPages(1);
+        }
 
-        // Calculate stats
+        // Calculate stats from current data
         setStats({
-          total: data.total,
-          verified: data.users.filter((u) => u.is_kyc_verified).length,
-          pending: data.users.filter((u) => !u.is_kyc_verified && u.is_active)
+          total: data.total_count || data.total || data.users?.length || 0,
+          verified: (data.users || data).filter((u: User) => u.is_kyc_verified)
             .length,
-          blocked: data.users.filter((u) => !u.is_active).length,
+          pending: (data.users || data).filter(
+            (u: User) => !u.is_kyc_verified && u.is_active
+          ).length,
+          blocked: (data.users || data).filter((u: User) => !u.is_active)
+            .length,
         });
       }
     } catch (error) {
@@ -128,7 +156,7 @@ export function UserList({ onUserSelect }: UserListProps) {
     if (isAuthenticated && !authLoading) {
       fetchUsers();
     }
-  }, [isAuthenticated, authLoading]);
+  }, [isAuthenticated, authLoading, filter]);
 
   const handleSearch = () => {
     setCurrentPage(1);
@@ -336,7 +364,32 @@ export function UserList({ onUserSelect }: UserListProps) {
                         )}
                       </TableCell>
                       <TableCell>
-                        {user.blockchain_address ? (
+                        {user.blockchain_address &&
+                        user.tourist_id_transaction_hash ? (
+                          <div className="space-y-1">
+                            <Badge variant="default">
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              Issued
+                            </Badge>
+                            <div>
+                              <a
+                                href={`https://amoy.polygonscan.com/tx/${
+                                  user.tourist_id_transaction_hash.startsWith(
+                                    "0x"
+                                  )
+                                    ? user.tourist_id_transaction_hash
+                                    : "0x" + user.tourist_id_transaction_hash
+                                }`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                              >
+                                <ExternalLink className="w-3 h-3 mr-1" />
+                                View on PolygonScan
+                              </a>
+                            </div>
+                          </div>
+                        ) : user.blockchain_address ? (
                           <Badge variant="default">
                             <CheckCircle className="w-3 h-3 mr-1" />
                             Issued

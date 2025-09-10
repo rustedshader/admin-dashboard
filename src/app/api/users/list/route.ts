@@ -12,13 +12,22 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const page = searchParams.get("page") || "1";
-    const limit = searchParams.get("limit") || "10";
-    const status = searchParams.get("status") || "";
+    const limit = searchParams.get("limit") || "100";
+    const offset = searchParams.get("offset") || "0";
+    const role_filter = searchParams.get("role_filter") || "";
+    const is_active_filter = searchParams.get("is_active_filter") || "";
+    const is_verified_filter = searchParams.get("is_verified_filter") || "";
 
-    let url = `https://api.rustedshader.com/users/admin/?page=${page}&limit=${limit}`;
-    if (status) {
-      url += `&status=${status}`;
+    let url = `https://api.rustedshader.com/users/admin?limit=${limit}&offset=${offset}`;
+
+    if (role_filter) {
+      url += `&role_filter=${role_filter}`;
+    }
+    if (is_active_filter) {
+      url += `&is_active_filter=${is_active_filter}`;
+    }
+    if (is_verified_filter) {
+      url += `&is_verified_filter=${is_verified_filter}`;
     }
 
     const response = await fetch(url, {
