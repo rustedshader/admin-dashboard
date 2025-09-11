@@ -16,9 +16,9 @@ export async function GET(
 
     const { user_id } = await params;
 
-    // Try admin itineraries endpoint with user_id query parameter
+    // Use the new user-specific itineraries endpoint
     const response = await fetch(
-      `https://api.rustedshader.com/itineraries/admin?user_id=${user_id}`,
+      `https://api.rustedshader.com/itineraries/user/${user_id}`,
       {
         method: "GET",
         headers: {
@@ -30,42 +30,14 @@ export async function GET(
     );
 
     if (!response.ok) {
-      // If admin endpoint doesn't exist, try general itineraries endpoint
-      // and filter by user_id on the frontend
-      const fallbackResponse = await fetch(
-        `https://api.rustedshader.com/itineraries/`,
+      const errorData = await response.text();
+      return NextResponse.json(
         {
-          method: "GET",
-          headers: {
-            accept: "application/json",
-            Authorization: authHeader,
-            "Content-Type": "application/json",
-          },
-        }
+          error: `Failed to fetch user itineraries: ${response.status} ${response.statusText}`,
+          details: errorData,
+        },
+        { status: response.status }
       );
-
-      if (!fallbackResponse.ok) {
-        const errorData = await response.text();
-        return NextResponse.json(
-          {
-            error: "Failed to fetch user itineraries",
-            details: errorData,
-          },
-          { status: response.status }
-        );
-      }
-
-      const fallbackData = await fallbackResponse.json();
-      // Filter itineraries for the specific user
-      const filteredItineraries = Array.isArray(fallbackData)
-        ? fallbackData.filter(
-            (itinerary: any) =>
-              itinerary.user_id?.toString() === user_id ||
-              itinerary.owner_id?.toString() === user_id
-          )
-        : [];
-
-      return NextResponse.json(filteredItineraries);
     }
 
     const data = await response.json();
