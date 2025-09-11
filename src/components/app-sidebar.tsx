@@ -16,6 +16,7 @@ import {
   Mountain,
   AlertTriangle,
   Satellite,
+  Route,
 } from "lucide-react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
@@ -65,6 +66,11 @@ const mainItems = [
     title: "Live Coordinates",
     url: "/coordinates",
     icon: Satellite,
+  },
+  {
+    title: "Test Route",
+    url: "/test-route",
+    icon: Route,
   },
   {
     title: "Tracking Devices",
