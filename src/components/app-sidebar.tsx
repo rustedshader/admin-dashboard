@@ -13,6 +13,9 @@ import {
   Shield,
   Radio,
   IdCard,
+  Mountain,
+  AlertTriangle,
+  Satellite,
 } from "lucide-react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
@@ -47,6 +50,21 @@ const mainItems = [
     title: "Blockchain ID Issuance",
     url: "/blockchain-id",
     icon: IdCard,
+  },
+  {
+    title: "Alerts Management",
+    url: "/alerts",
+    icon: AlertTriangle,
+  },
+  {
+    title: "Treks Management",
+    url: "/treks",
+    icon: Mountain,
+  },
+  {
+    title: "Live Coordinates",
+    url: "/coordinates",
+    icon: Satellite,
   },
   {
     title: "Tracking Devices",
