@@ -4,16 +4,19 @@ export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json();
 
-    const response = await fetch("https://api.rustedshader.com/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        username,
-        password,
-      }),
-    });
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/auth/login`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          username,
+          password,
+        }),
+      }
+    );
 
     if (!response.ok) {
       return NextResponse.json(

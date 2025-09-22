@@ -113,7 +113,9 @@ const TestRoutePage = () => {
 
       if (response.ok) {
         const routeData = await response.json();
-        setRouteResult(routeData);
+        console.log("Route data received:", routeData);
+        // Extract the geojson object which contains the expected structure
+        setRouteResult(routeData.geojson || routeData);
       } else {
         const errorData = await response.json();
         console.error("Route calculation failed:", errorData);
@@ -386,7 +388,8 @@ const TestRoutePage = () => {
                       <span className="text-sm">Distance</span>
                     </div>
                     <span className="font-semibold">
-                      {routeResult.properties.distance_km.toFixed(2)} km
+                      {routeResult.properties?.distance_km?.toFixed(2) || "N/A"}{" "}
+                      km
                     </span>
                   </div>
 
@@ -396,28 +399,32 @@ const TestRoutePage = () => {
                       <span className="text-sm">Duration</span>
                     </div>
                     <span className="font-semibold">
-                      {formatTime(routeResult.properties.time_seconds)}
+                      {routeResult.properties?.time_seconds
+                        ? formatTime(routeResult.properties.time_seconds)
+                        : "N/A"}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      {getProfileIcon(routeResult.properties.profile)}
+                      {getProfileIcon(routeResult.properties?.profile)}
                       <span className="text-sm">Profile</span>
                     </div>
                     <span className="font-semibold capitalize">
-                      {routeResult.properties.profile}
+                      {routeResult.properties?.profile || "N/A"}
                     </span>
                   </div>
 
                   <div className="pt-2 border-t text-xs text-muted-foreground">
                     <p>
-                      Coordinates: {routeResult.geometry.coordinates.length}{" "}
-                      points
+                      Coordinates:{" "}
+                      {routeResult.geometry?.coordinates?.length || 0} points
                     </p>
                     <p>
                       Exact distance:{" "}
-                      {routeResult.properties.distance_meters.toFixed(1)}m
+                      {routeResult.properties?.distance_meters?.toFixed(1) ||
+                        "N/A"}
+                      m
                     </p>
                   </div>
                 </CardContent>

@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     });
 
     const response = await fetch(
-      `https://api.rustedshader.com/geofencing/check-point?${queryParams}`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/geofencing/check-point?${queryParams}`,
       {
         method: "GET",
         headers: {

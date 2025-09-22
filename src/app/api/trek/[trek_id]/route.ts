@@ -15,7 +15,7 @@ export async function GET(
     }
 
     const response = await fetch(
-      `https://api.rustedshader.com/trek/${params.trek_id}`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/trek/${params.trek_id}`,
       {
         method: "GET",
         headers: {
@@ -61,7 +61,7 @@ export async function PUT(
     const body = await request.json();
 
     const response = await fetch(
-      `https://api.rustedshader.com/trek/${params.trek_id}`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/trek/${params.trek_id}`,
       {
         method: "PUT",
         headers: {
@@ -106,7 +106,7 @@ export async function DELETE(
     }
 
     const response = await fetch(
-      `https://api.rustedshader.com/trek/${params.trek_id}`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/trek/${params.trek_id}`,
       {
         method: "DELETE",
         headers: {

@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     const is_active_filter = searchParams.get("is_active_filter") || "";
     const is_verified_filter = searchParams.get("is_verified_filter") || "";
 
-    let url = `https://api.rustedshader.com/users/admin?limit=${limit}&offset=${offset}`;
+    let url = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/users/admin?limit=${limit}&offset=${offset}`;
 
     if (role_filter) {
       url += `&role_filter=${role_filter}`;

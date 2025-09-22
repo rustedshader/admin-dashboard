@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     }
 
     const response = await fetch(
-      `https://api.rustedshader.com/tracking-device/list`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/tracking-device/list`,
       {
         method: "GET",
         headers: {

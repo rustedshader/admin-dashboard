@@ -17,7 +17,7 @@ export async function GET(
     const { user_id } = await params;
 
     const response = await fetch(
-      `https://api.rustedshader.com/users/admin/${user_id}/blockchain-id`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/users/admin/${user_id}/blockchain-id`,
       {
         method: "GET",
         headers: {
@@ -65,7 +65,7 @@ export async function POST(
     const body = await request.json();
 
     const response = await fetch(
-      `https://api.rustedshader.com/users/admin/${user_id}/blockchain-id`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/users/admin/${user_id}/blockchain-id`,
       {
         method: "POST",
         headers: {

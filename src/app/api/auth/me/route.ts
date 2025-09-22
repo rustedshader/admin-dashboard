@@ -11,13 +11,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const response = await fetch("https://api.rustedshader.com/auth/me", {
-      method: "GET",
-      headers: {
-        Authorization: authHeader,
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/auth/me`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: authHeader,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!response.ok) {
       return NextResponse.json(

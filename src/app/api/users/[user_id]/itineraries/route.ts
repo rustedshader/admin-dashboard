@@ -18,7 +18,7 @@ export async function GET(
 
     // Use the new user-specific itineraries endpoint
     const response = await fetch(
-      `https://api.rustedshader.com/itineraries/user/${user_id}`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/itineraries/user/${user_id}`,
       {
         method: "GET",
         headers: {

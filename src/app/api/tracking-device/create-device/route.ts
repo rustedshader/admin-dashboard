@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     const deviceData = await request.json();
 
     const response = await fetch(
-      `https://api.rustedshader.com/tracking-device/create-device`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/tracking-device/create-device`,
       {
         method: "POST",
         headers: {

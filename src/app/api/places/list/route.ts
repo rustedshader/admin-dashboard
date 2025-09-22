@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     const pageSize = url.searchParams.get("page_size") || "20";
 
     const response = await fetch(
-      `https://api.rustedshader.com/places/?page=${page}&page_size=${pageSize}`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/places/?page=${page}&page_size=${pageSize}`,
       {
         method: "GET",
         headers: {

@@ -18,7 +18,7 @@ export async function POST(
     const body = await request.json();
 
     const response = await fetch(
-      `https://api.rustedshader.com/users/admin/${user_id}/verify`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/users/admin/${user_id}/verify`,
       {
         method: "POST",
         headers: {

@@ -17,7 +17,7 @@ export async function GET(
     const { device_id } = await params;
 
     const response = await fetch(
-      `https://api.rustedshader.com/tracking-device/${device_id}/api-key`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/tracking-device/${device_id}/api-key`,
       {
         method: "GET",
         headers: {

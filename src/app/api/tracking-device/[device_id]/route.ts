@@ -17,7 +17,7 @@ export async function GET(
     const { device_id } = await params;
 
     const response = await fetch(
-      `https://api.rustedshader.com/tracking-device/${device_id}`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/tracking-device/${device_id}`,
       {
         method: "GET",
         headers: {
@@ -65,7 +65,7 @@ export async function PATCH(
     const updateData = await request.json();
 
     const response = await fetch(
-      `https://api.rustedshader.com/tracking-device/${device_id}`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/tracking-device/${device_id}`,
       {
         method: "PATCH",
         headers: {

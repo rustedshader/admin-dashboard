@@ -18,7 +18,7 @@ export async function PUT(
     const { place_id } = await params;
 
     const response = await fetch(
-      `https://api.rustedshader.com/places/admin/${place_id}`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/places/admin/${place_id}`,
       {
         method: "PATCH",
         headers: {

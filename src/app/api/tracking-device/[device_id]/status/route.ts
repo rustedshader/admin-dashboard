@@ -18,7 +18,7 @@ export async function PATCH(
     const statusData = await request.json();
 
     const response = await fetch(
-      `https://api.rustedshader.com/tracking-device/${device_id}/status`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/tracking-device/${device_id}/status`,
       {
         method: "PATCH",
         headers: {

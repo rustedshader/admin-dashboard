@@ -13,14 +13,17 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    const response = await fetch("https://api.rustedshader.com/trek/create", {
-      method: "POST",
-      headers: {
-        Authorization: authHeader,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/trek/create`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: authHeader,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      }
+    );
 
     const data = await response.json();
 

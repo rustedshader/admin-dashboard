@@ -33,15 +33,18 @@ async function refreshAccessToken(token: any): Promise<any> {
       throw new Error("No refresh token available");
     }
 
-    const response = await fetch("https://api.rustedshader.com/auth/refresh", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        refresh_token: token.refreshToken,
-      }),
-    });
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/auth/refresh`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          refresh_token: token.refreshToken,
+        }),
+      }
+    );
 
     if (!response.ok) {
       throw new Error("Failed to refresh token");
@@ -95,7 +98,7 @@ export const authOptions: NextAuthOptions = {
         try {
           // Login to backend API
           const loginResponse = await fetch(
-            "https://api.rustedshader.com/auth/login",
+            `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/auth/login`,
             {
               method: "POST",
               headers: {
@@ -125,7 +128,7 @@ export const authOptions: NextAuthOptions = {
 
           // Get user information
           const meResponse = await fetch(
-            "https://api.rustedshader.com/auth/me",
+            `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/auth/me`,
             {
               method: "GET",
               headers: {

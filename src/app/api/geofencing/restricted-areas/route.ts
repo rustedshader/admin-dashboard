@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get("limit") || "100";
     const offset = searchParams.get("offset") || "0";
 
-    let url = `https://api.rustedshader.com/geofencing/restricted-areas?limit=${limit}&offset=${offset}`;
+    let url = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/geofencing/restricted-areas?limit=${limit}&offset=${offset}`;
     if (status_filter) url += `&status_filter=${status_filter}`;
     if (area_type_filter) url += `&area_type_filter=${area_type_filter}`;
 
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     const restrictedAreaData = await request.json();
 
     const response = await fetch(
-      "https://api.rustedshader.com/geofencing/restricted-areas",
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/geofencing/restricted-areas`,
       {
         method: "POST",
         headers: {

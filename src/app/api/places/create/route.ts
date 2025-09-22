@@ -13,15 +13,18 @@ export async function POST(request: NextRequest) {
 
     const placeData = await request.json();
 
-    const response = await fetch("https://api.rustedshader.com/places/admin/", {
-      method: "POST",
-      headers: {
-        accept: "application/json",
-        Authorization: authHeader,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(placeData),
-    });
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/places/admin/`,
+      {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          Authorization: authHeader,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(placeData),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.text();

@@ -11,15 +11,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const response = await fetch("https://api.rustedshader.com/auth/refresh", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        refresh_token: refresh_token,
-      }),
-    });
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/auth/refresh`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          refresh_token: refresh_token,
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.text();

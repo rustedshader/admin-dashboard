@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const device_id = searchParams.get("device_id") || "shubhang";
 
     const response = await fetch(
-      `https://api.rustedshader.com/test-coordinates/?limit=${limit}&device_id=${device_id}`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/test-coordinates/?limit=${limit}&device_id=${device_id}`,
       {
         method: "GET",
         headers: {

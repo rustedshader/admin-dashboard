@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     }
 
     const response = await fetch(
-      "https://api.rustedshader.com/users/admin/stats",
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/users/admin/stats`,
       {
         method: "GET",
         headers: {

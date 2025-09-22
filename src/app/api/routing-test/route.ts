@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     const response = await fetch(
-      "https://api.rustedshader.com/routing-test/test-route-with-geofencing",
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/routing/test-route-with-geofencing`,
       {
         method: "POST",
         headers: {

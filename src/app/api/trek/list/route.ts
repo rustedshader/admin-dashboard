@@ -11,13 +11,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const response = await fetch("https://api.rustedshader.com/trek/list", {
-      method: "GET",
-      headers: {
-        Authorization: authHeader,
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/trek/list`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: authHeader,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     const data = await response.json();
 

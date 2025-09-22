@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_BASE_URL =
-  process.env.BACKEND_API_URL || "https://api.rustedshader.com";
+const API_BASE_URL = process.env.BACKEND_API_URL;
 
 export async function GET(request: NextRequest) {
   try {

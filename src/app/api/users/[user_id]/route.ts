@@ -18,7 +18,7 @@ export async function PATCH(
     const updateData = await request.json();
 
     const response = await fetch(
-      `https://api.rustedshader.com/users/admin/${user_id}`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/users/admin/${user_id}`,
       {
         method: "PATCH",
         headers: {
@@ -66,7 +66,7 @@ export async function GET(
     const { user_id } = await params;
 
     const response = await fetch(
-      `https://api.rustedshader.com/users/admin/${user_id}`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/users/admin/${user_id}`,
       {
         method: "GET",
         headers: {

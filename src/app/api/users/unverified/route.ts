@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     const offset = searchParams.get("offset") || "0";
 
     const response = await fetch(
-      `https://api.rustedshader.com/users/admin/unverified?limit=${limit}&offset=${offset}`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/users/admin/unverified?limit=${limit}&offset=${offset}`,
       {
         method: "GET",
         headers: {

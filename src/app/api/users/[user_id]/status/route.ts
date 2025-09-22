@@ -18,7 +18,7 @@ export async function PUT(
     const { user_id } = params;
 
     const response = await fetch(
-      `https://api.rustedshader.com/users/admin/${user_id}/status`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/users/admin/${user_id}/status`,
       {
         method: "PUT",
         headers: {

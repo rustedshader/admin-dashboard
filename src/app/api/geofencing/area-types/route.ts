@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     });
 
     const response = await fetch(
-      `https://api.rustedshader.com/geofencing/admin/area-types?${queryParams}`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/geofencing/admin/area-types?${queryParams}`,
       {
         method: "GET",
         headers: {
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
     const areaTypeData = await request.json();
 
     const response = await fetch(
-      `https://api.rustedshader.com/geofencing/admin/area-types`,
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/geofencing/admin/area-types`,
       {
         method: "POST",
         headers: {
