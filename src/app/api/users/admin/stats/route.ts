@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { API_ENDPOINTS, buildApiUrl } from "@/lib/api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
@@ -13,7 +14,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const response = await fetch(`${API_BASE_URL}/users/admin/stats`, {
+    const url = buildApiUrl(API_ENDPOINTS.admin.users.stats);
+    const response = await fetch(url, {
       headers: {
         Authorization: authHeader,
         "Content-Type": "application/json",

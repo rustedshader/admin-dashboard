@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { API_ENDPOINTS, buildApiUrl } from "@/lib/api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
@@ -14,17 +15,25 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const params = new URLSearchParams();
+    const params: Record<string, string> = {};
 
-    // Forward query parameters
-    searchParams.forEach((value, key) => {
-      params.append(key, value);
+    // Extract supported query parameters
+    const supportedParams = [
+      "role_filter",
+      "is_active_filter",
+      "is_verified_filter",
+      "limit",
+      "offset",
+    ];
+    supportedParams.forEach((param) => {
+      const value = searchParams.get(param);
+      if (value !== null) {
+        params[param] = value;
+      }
     });
 
-    const queryString = params.toString();
-    const url = `${API_BASE_URL}/users/admin${
-      queryString ? `?${queryString}` : ""
-    }`;
+    // Use the new admin users list endpoint
+    const url = buildApiUrl(API_ENDPOINTS.admin.users.list, params);
 
     const response = await fetch(url, {
       headers: {

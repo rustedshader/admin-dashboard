@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { API_ENDPOINTS, buildApiUrl } from "@/lib/api";
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const authHeader = request.headers.get("authorization");
 
@@ -12,34 +12,35 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { searchParams } = new URL(request.url);
-    const params = {
-      limit: searchParams.get("limit") || "100",
-      offset: searchParams.get("offset") || "0",
-    };
+    const requestData = await request.json();
 
-    const url = buildApiUrl(API_ENDPOINTS.admin.users.unverified, params);
+    const url = buildApiUrl(API_ENDPOINTS.admin.blockchain.issue);
     const response = await fetch(url, {
-      method: "GET",
+      method: "POST",
       headers: {
-        accept: "application/json",
         Authorization: authHeader,
         "Content-Type": "application/json",
       },
+      body: JSON.stringify(requestData),
     });
 
     if (!response.ok) {
-      const errorData = await response.text();
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch {
+        errorData = { error: `HTTP ${response.status}` };
+      }
       return NextResponse.json(
-        { error: "Failed to fetch unverified users", details: errorData },
+        { error: "Failed to issue blockchain ID", details: errorData },
         { status: response.status }
       );
     }
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    const blockchainData = await response.json();
+    return NextResponse.json(blockchainData);
   } catch (error) {
-    console.error("Unverified users API error:", error);
+    console.error("Blockchain ID issuance error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

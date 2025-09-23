@@ -58,21 +58,6 @@ const mainItems = [
     icon: AlertTriangle,
   },
   {
-    title: "Treks Management",
-    url: "/treks",
-    icon: Mountain,
-  },
-  {
-    title: "Live Coordinates",
-    url: "/coordinates",
-    icon: Satellite,
-  },
-  {
-    title: "Test Route",
-    url: "/test-route",
-    icon: Route,
-  },
-  {
     title: "Tracking Devices",
     url: "/transport",
     icon: Radio,
@@ -88,14 +73,29 @@ const mainItems = [
     icon: Plus,
   },
   {
-    title: "Add Place",
-    url: "/places/add",
-    icon: Plus,
+    title: "Test Route",
+    url: "/test-route",
+    icon: Route,
   },
   {
-    title: "Manage Places",
-    url: "/places/manage",
-    icon: Settings,
+    title: "Offline Activities",
+    url: "/activities/offline",
+    icon: Mountain,
+  },
+  {
+    title: "Online Activities",
+    url: "/activities/online",
+    icon: Map,
+  },
+  {
+    title: "Accommodations",
+    url: "/accommodations",
+    icon: Home,
+  },
+  {
+    title: "Active Trips",
+    url: "/trips/active",
+    icon: Plane,
   },
   {
     title: "Map Tool",

@@ -70,15 +70,13 @@ interface UserStats {
   blockchain_ids_issued: number;
 }
 
-interface PlaceData {
-  id: number;
-  name: string;
-  city: string;
-  state: string;
-  place_type: string;
-  is_featured: boolean;
-  latitude: number;
-  longitude: number;
+interface DashboardStats {
+  totalUsers: number;
+  totalActiveTrips: number;
+  emergencyAlerts: number;
+  pendingVerifications: number;
+  todayRegistrations: number;
+  blockchainIdsIssued: number;
 }
 
 const Home = () => {
@@ -96,8 +94,12 @@ const Home = () => {
   const [activeTourists, setActiveTourists] = useState<ActiveTourist[]>([]);
   const [alertStats, setAlertStats] = useState<AlertData | null>(null);
   const [userStats, setUserStats] = useState<UserStats | null>(null);
-  const [featuredPlaces, setFeaturedPlaces] = useState<PlaceData[]>([]);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const fetchDashboardData = async () => {
     if (!isAuthenticated) return;
@@ -106,17 +108,12 @@ const Home = () => {
       setLoading(true);
 
       // Fetch multiple APIs in parallel
-      const [
-        activeTouristsRes,
-        alertStatsRes,
-        userStatsRes,
-        featuredPlacesRes,
-      ] = await Promise.allSettled([
-        authenticatedFetch("/api/tracking/admin/active-tourists"),
-        authenticatedFetch("/api/alerts/statistics"),
-        authenticatedFetch("/api/users/admin/stats"),
-        authenticatedFetch("/api/places/featured"),
-      ]);
+      const [activeTouristsRes, alertStatsRes, userStatsRes] =
+        await Promise.allSettled([
+          authenticatedFetch("/api/tracking/admin/active-tourists"),
+          authenticatedFetch("/api/alerts/statistics"),
+          authenticatedFetch("/api/users/stats"),
+        ]);
 
       // Process active tourists
       if (
@@ -151,15 +148,6 @@ const Home = () => {
           blockchainIdsIssued: data.blockchain_ids_issued || 0,
           pendingVerifications: data.by_verification?.unverified || 0,
         }));
-      }
-
-      // Process featured places
-      if (
-        featuredPlacesRes.status === "fulfilled" &&
-        featuredPlacesRes.value.ok
-      ) {
-        const data = await featuredPlacesRes.value.json();
-        setFeaturedPlaces(data || []);
       }
 
       setLastUpdated(new Date());
@@ -248,7 +236,8 @@ const Home = () => {
           </div>
           <div className="flex items-center gap-4">
             <p className="text-sm text-muted-foreground">
-              Last updated: {lastUpdated.toLocaleTimeString()}
+              Last updated:{" "}
+              {isClient ? lastUpdated.toLocaleTimeString() : "Loading..."}
             </p>
             <Button onClick={fetchDashboardData} variant="outline" size="sm">
               <RefreshCw className="w-4 h-4 mr-2" />
@@ -289,21 +278,14 @@ const Home = () => {
             icon={Shield}
             color="text-purple-600"
           />
-          <StatCard
-            title="Featured Places"
-            value={featuredPlaces.length}
-            icon={MapPin}
-            color="text-indigo-600"
-          />
         </div>
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="monitoring" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="monitoring">Live Monitoring</TabsTrigger>
             <TabsTrigger value="alerts">Alert Management</TabsTrigger>
             <TabsTrigger value="users">User Analytics</TabsTrigger>
-            <TabsTrigger value="places">Places Overview</TabsTrigger>
           </TabsList>
 
           <TabsContent value="monitoring" className="space-y-6">
@@ -603,43 +585,6 @@ const Home = () => {
                 </div>
               </>
             )}
-          </TabsContent>
-
-          <TabsContent value="places" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5" />
-                  Featured Places ({featuredPlaces.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {featuredPlaces.map((place) => (
-                    <Card key={place.id} className="p-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-medium">{place.name}</h4>
-                          <Badge variant="outline">{place.place_type}</Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {place.city}, {place.state}
-                        </p>
-                        <div className="text-xs text-muted-foreground">
-                          {place.latitude.toFixed(4)},{" "}
-                          {place.longitude.toFixed(4)}
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                  {featuredPlaces.length === 0 && (
-                    <div className="col-span-full text-center py-8 text-muted-foreground">
-                      No featured places found
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
         </Tabs>
       </div>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { API_ENDPOINTS, buildApiUrl } from "@/lib/api";
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,23 +13,28 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const limit = searchParams.get("limit") || "100";
-    const offset = searchParams.get("offset") || "0";
-    const role_filter = searchParams.get("role_filter") || "";
-    const is_active_filter = searchParams.get("is_active_filter") || "";
-    const is_verified_filter = searchParams.get("is_verified_filter") || "";
+    const params: Record<string, string> = {};
 
-    let url = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/users/admin?limit=${limit}&offset=${offset}`;
+    // Extract supported query parameters
+    const supportedParams = [
+      "limit",
+      "offset",
+      "role_filter",
+      "is_active_filter",
+      "is_verified_filter",
+    ];
+    supportedParams.forEach((param) => {
+      const value = searchParams.get(param);
+      if (value !== null && value !== "") {
+        params[param] = value;
+      }
+    });
 
-    if (role_filter) {
-      url += `&role_filter=${role_filter}`;
-    }
-    if (is_active_filter) {
-      url += `&is_active_filter=${is_active_filter}`;
-    }
-    if (is_verified_filter) {
-      url += `&is_verified_filter=${is_verified_filter}`;
-    }
+    // Set defaults
+    if (!params.limit) params.limit = "100";
+    if (!params.offset) params.offset = "0";
+
+    const url = buildApiUrl(API_ENDPOINTS.admin.users.list, params);
 
     const response = await fetch(url, {
       method: "GET",

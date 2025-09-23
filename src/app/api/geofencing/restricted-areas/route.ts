@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { API_ENDPOINTS, buildApiUrl } from "@/lib/api";
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,15 +13,30 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const status_filter = searchParams.get("status_filter") || "";
-    const area_type_filter = searchParams.get("area_type_filter") || "";
-    const limit = searchParams.get("limit") || "100";
-    const offset = searchParams.get("offset") || "0";
+    const params: Record<string, string> = {};
 
-    let url = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/geofencing/restricted-areas?limit=${limit}&offset=${offset}`;
-    if (status_filter) url += `&status_filter=${status_filter}`;
-    if (area_type_filter) url += `&area_type_filter=${area_type_filter}`;
+    // Extract supported query parameters
+    const supportedParams = [
+      "status_filter",
+      "area_type_filter",
+      "limit",
+      "offset",
+    ];
+    supportedParams.forEach((param) => {
+      const value = searchParams.get(param);
+      if (value !== null && value !== "") {
+        params[param] = value;
+      }
+    });
 
+    // Set defaults if not provided
+    if (!params.limit) params.limit = "100";
+    if (!params.offset) params.offset = "0";
+
+    const url = buildApiUrl(
+      API_ENDPOINTS.geofencing.restrictedAreas.list,
+      params
+    );
     const response = await fetch(url, {
       method: "GET",
       headers: {
@@ -81,18 +97,16 @@ export async function POST(request: NextRequest) {
 
     const restrictedAreaData = await request.json();
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/geofencing/restricted-areas`,
-      {
-        method: "POST",
-        headers: {
-          accept: "application/json",
-          Authorization: authHeader,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(restrictedAreaData),
-      }
-    );
+    const url = buildApiUrl(API_ENDPOINTS.geofencing.restrictedAreas.create);
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        Authorization: authHeader,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(restrictedAreaData),
+    });
 
     if (!response.ok) {
       const errorData = await response.text();

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { API_ENDPOINTS, buildApiUrl } from "@/lib/api";
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,17 +12,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/users/admin/stats`,
-      {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization: authHeader,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    // Use the new admin stats endpoint
+    const url = buildApiUrl(API_ENDPOINTS.admin.users.stats);
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        accept: "application/json",
+        Authorization: authHeader,
+        "Content-Type": "application/json",
+      },
+    });
 
     if (!response.ok) {
       const errorData = await response.text();

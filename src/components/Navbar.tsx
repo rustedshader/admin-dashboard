@@ -35,22 +35,6 @@ const Navbar = () => {
           </Link>
 
           <Link
-            href="/places/add"
-            className="flex items-center space-x-2 text-foreground hover:text-primary"
-          >
-            <Plus className="w-5 h-5" />
-            <span>Add Place</span>
-          </Link>
-
-          <Link
-            href="/places/manage"
-            className="flex items-center space-x-2 text-foreground hover:text-primary"
-          >
-            <Settings className="w-5 h-5" />
-            <span>Manage Places</span>
-          </Link>
-
-          <Link
             href="/maptool"
             className="flex items-center space-x-2 text-foreground hover:text-primary"
           >

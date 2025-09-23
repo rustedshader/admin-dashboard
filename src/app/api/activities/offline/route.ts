@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { API_ENDPOINTS, buildApiUrl } from "@/lib/api";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ user_id: string }> }
-) {
+export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get("authorization");
 
@@ -15,14 +12,25 @@ export async function GET(
       );
     }
 
-    const { user_id } = await params;
-    const userId = parseInt(user_id);
+    const { searchParams } = new URL(request.url);
+    const params: Record<string, string> = {};
 
-    if (isNaN(userId)) {
-      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
-    }
+    // Extract supported query parameters for offline activities
+    const supportedParams = [
+      "state",
+      "difficulty",
+      "city",
+      "district",
+      "limit",
+    ];
+    supportedParams.forEach((param) => {
+      const value = searchParams.get(param);
+      if (value !== null && value !== "") {
+        params[param] = value;
+      }
+    });
 
-    const url = buildApiUrl(API_ENDPOINTS.admin.users.details(userId));
+    const url = buildApiUrl(API_ENDPOINTS.activities.offline.list, params);
     const response = await fetch(url, {
       headers: {
         Authorization: authHeader,
@@ -38,15 +46,15 @@ export async function GET(
         errorData = { error: `HTTP ${response.status}` };
       }
       return NextResponse.json(
-        { error: "Failed to fetch user details", details: errorData },
+        { error: "Failed to fetch offline activities", details: errorData },
         { status: response.status }
       );
     }
 
-    const userData = await response.json();
-    return NextResponse.json(userData);
+    const activitiesData = await response.json();
+    return NextResponse.json(activitiesData);
   } catch (error) {
-    console.error("User details fetch error:", error);
+    console.error("Offline activities fetch error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -54,10 +62,7 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ user_id: string }> }
-) {
+export async function POST(request: NextRequest) {
   try {
     const authHeader = request.headers.get("authorization");
 
@@ -68,24 +73,16 @@ export async function PUT(
       );
     }
 
-    const { user_id } = await params;
-    const userId = parseInt(user_id);
+    const activityData = await request.json();
 
-    if (isNaN(userId)) {
-      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
-    }
-
-    const updateData = await request.json();
-
-    // Use the new status update endpoint
-    const url = buildApiUrl(API_ENDPOINTS.admin.users.updateStatus(userId));
+    const url = buildApiUrl(API_ENDPOINTS.activities.offline.create);
     const response = await fetch(url, {
-      method: "PUT",
+      method: "POST",
       headers: {
         Authorization: authHeader,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(updateData),
+      body: JSON.stringify(activityData),
     });
 
     if (!response.ok) {
@@ -96,15 +93,15 @@ export async function PUT(
         errorData = { error: `HTTP ${response.status}` };
       }
       return NextResponse.json(
-        { error: "Failed to update user status", details: errorData },
+        { error: "Failed to create offline activity", details: errorData },
         { status: response.status }
       );
     }
 
-    const updatedUser = await response.json();
-    return NextResponse.json(updatedUser);
+    const createdActivity = await response.json();
+    return NextResponse.json(createdActivity);
   } catch (error) {
-    console.error("User update error:", error);
+    console.error("Offline activity creation error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

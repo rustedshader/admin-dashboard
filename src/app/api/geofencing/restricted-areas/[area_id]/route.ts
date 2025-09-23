@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { API_ENDPOINTS, buildApiUrl } from "@/lib/api";
 
 export async function GET(
   request: NextRequest,
@@ -15,18 +16,23 @@ export async function GET(
     }
 
     const { area_id } = await params;
+    const areaId = parseInt(area_id);
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/geofencing/restricted-areas/${area_id}`,
-      {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization: authHeader,
-          "Content-Type": "application/json",
-        },
-      }
+    if (isNaN(areaId)) {
+      return NextResponse.json({ error: "Invalid area ID" }, { status: 400 });
+    }
+
+    const url = buildApiUrl(
+      API_ENDPOINTS.geofencing.restrictedAreas.details(areaId)
     );
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        accept: "application/json",
+        Authorization: authHeader,
+        "Content-Type": "application/json",
+      },
+    });
 
     if (!response.ok) {
       const errorData = await response.text();

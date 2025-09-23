@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { API_ENDPOINTS, buildApiUrl } from "@/lib/api";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ user_id: string }> }
-) {
+export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get("authorization");
 
@@ -15,14 +12,31 @@ export async function GET(
       );
     }
 
-    const { user_id } = await params;
-    const userId = parseInt(user_id);
+    const { searchParams } = new URL(request.url);
+    const params: Record<string, string> = {};
 
-    if (isNaN(userId)) {
-      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
-    }
+    // Extract supported query parameters for accommodations
+    const supportedParams = [
+      "page",
+      "page_size",
+      "city",
+      "state",
+      "latitude",
+      "longitude",
+      "radius_km",
+    ];
+    supportedParams.forEach((param) => {
+      const value = searchParams.get(param);
+      if (value !== null && value !== "") {
+        params[param] = value;
+      }
+    });
 
-    const url = buildApiUrl(API_ENDPOINTS.admin.users.details(userId));
+    // Set default pagination if not provided
+    if (!params.page) params.page = "1";
+    if (!params.page_size) params.page_size = "20";
+
+    const url = buildApiUrl(API_ENDPOINTS.accommodations.list, params);
     const response = await fetch(url, {
       headers: {
         Authorization: authHeader,
@@ -38,15 +52,15 @@ export async function GET(
         errorData = { error: `HTTP ${response.status}` };
       }
       return NextResponse.json(
-        { error: "Failed to fetch user details", details: errorData },
+        { error: "Failed to fetch accommodations", details: errorData },
         { status: response.status }
       );
     }
 
-    const userData = await response.json();
-    return NextResponse.json(userData);
+    const accommodationsData = await response.json();
+    return NextResponse.json(accommodationsData);
   } catch (error) {
-    console.error("User details fetch error:", error);
+    console.error("Accommodations fetch error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -54,10 +68,7 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ user_id: string }> }
-) {
+export async function POST(request: NextRequest) {
   try {
     const authHeader = request.headers.get("authorization");
 
@@ -68,24 +79,16 @@ export async function PUT(
       );
     }
 
-    const { user_id } = await params;
-    const userId = parseInt(user_id);
+    const accommodationData = await request.json();
 
-    if (isNaN(userId)) {
-      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
-    }
-
-    const updateData = await request.json();
-
-    // Use the new status update endpoint
-    const url = buildApiUrl(API_ENDPOINTS.admin.users.updateStatus(userId));
+    const url = buildApiUrl(API_ENDPOINTS.accommodations.create);
     const response = await fetch(url, {
-      method: "PUT",
+      method: "POST",
       headers: {
         Authorization: authHeader,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(updateData),
+      body: JSON.stringify(accommodationData),
     });
 
     if (!response.ok) {
@@ -96,15 +99,15 @@ export async function PUT(
         errorData = { error: `HTTP ${response.status}` };
       }
       return NextResponse.json(
-        { error: "Failed to update user status", details: errorData },
+        { error: "Failed to create accommodation", details: errorData },
         { status: response.status }
       );
     }
 
-    const updatedUser = await response.json();
-    return NextResponse.json(updatedUser);
+    const createdAccommodation = await response.json();
+    return NextResponse.json(createdAccommodation);
   } catch (error) {
-    console.error("User update error:", error);
+    console.error("Accommodation creation error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

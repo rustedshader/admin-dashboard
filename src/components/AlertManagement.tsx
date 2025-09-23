@@ -49,6 +49,11 @@ const AlertManagement = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const fetchAlerts = async () => {
     if (!isAuthenticated) return;
@@ -265,7 +270,8 @@ const AlertManagement = () => {
             </CardTitle>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">
-                Last updated: {lastUpdated.toLocaleTimeString()}
+                Last updated:{" "}
+                {isClient ? lastUpdated.toLocaleTimeString() : "Loading..."}
               </span>
               <Button
                 onClick={fetchAlerts}
