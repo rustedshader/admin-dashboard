@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useAuthenticatedFetch } from "@/hooks/useAuth";
 import {
@@ -32,9 +31,9 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { LocationSelector } from "@/components/LocationSelector";
 import { toast } from "sonner";
 import { Plus, Edit, Trash2, Search } from "lucide-react";
-
 interface OfflineActivity {
   id: number;
   name: string;
@@ -52,7 +51,6 @@ interface OfflineActivity {
   created_at: string;
   updated_at: string;
 }
-
 interface CreateActivityData {
   name: string;
   description?: string;
@@ -76,7 +74,6 @@ interface CreateActivityData {
   minimum_people?: number;
   maximum_people?: number;
 }
-
 export function OfflineActivitiesManagement() {
   const [activities, setActivities] = useState<OfflineActivity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,7 +82,7 @@ export function OfflineActivitiesManagement() {
   const [difficultyFilter, setDifficultyFilter] = useState("all");
   const [stateFilter, setStateFilter] = useState("");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [selectedActivity, setSelectedActivity] =
     useState<OfflineActivity | null>(null);
   const [createFormData, setCreateFormData] = useState<CreateActivityData>({
@@ -111,32 +108,25 @@ export function OfflineActivitiesManagement() {
     minimum_people: undefined,
     maximum_people: undefined,
   });
-
   const { authenticatedFetch } = useAuthenticatedFetch();
-
   useEffect(() => {
     loadActivities();
   }, []);
-
   const loadActivities = async () => {
     try {
       setLoading(true);
       setError(null);
-
       const params = new URLSearchParams();
       if (difficultyFilter && difficultyFilter !== "all")
         params.append("difficulty", difficultyFilter);
       if (stateFilter) params.append("state", stateFilter);
       params.append("limit", "100");
-
       const response = await authenticatedFetch(
         `/api/activities/offline?${params.toString()}`
       );
-
       if (!response.ok) {
         throw new Error("Failed to fetch offline activities");
       }
-
       const data = await response.json();
       setActivities(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -149,7 +139,6 @@ export function OfflineActivitiesManagement() {
       setLoading(false);
     }
   };
-
   const handleCreateActivity = async () => {
     try {
       // Validate required fields
@@ -162,12 +151,10 @@ export function OfflineActivitiesManagement() {
         toast.error("Please fill in all required fields");
         return;
       }
-
       if (createFormData.latitude === 0 || createFormData.longitude === 0) {
         toast.error("Please provide valid coordinates");
         return;
       }
-
       const response = await authenticatedFetch("/api/activities/offline", {
         method: "POST",
         headers: {
@@ -175,12 +162,10 @@ export function OfflineActivitiesManagement() {
         },
         body: JSON.stringify(createFormData),
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to create activity");
       }
-
       toast.success("Offline activity created successfully");
       setCreateDialogOpen(false);
       resetCreateForm();
@@ -192,7 +177,6 @@ export function OfflineActivitiesManagement() {
       );
     }
   };
-
   const resetCreateForm = () => {
     setCreateFormData({
       name: "",
@@ -219,13 +203,121 @@ export function OfflineActivitiesManagement() {
     });
   };
 
+  const handleEditActivity = async () => {
+    try {
+      if (!selectedActivity) {
+        toast.error("No activity selected");
+        return;
+      }
+
+      // Validate required fields
+      if (
+        !createFormData.name ||
+        !createFormData.city ||
+        !createFormData.district ||
+        !createFormData.state
+      ) {
+        toast.error("Please fill in all required fields");
+        return;
+      }
+      if (createFormData.latitude === 0 || createFormData.longitude === 0) {
+        toast.error("Please provide valid coordinates");
+        return;
+      }
+
+      const response = await authenticatedFetch(
+        `/api/activities/offline/${selectedActivity.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(createFormData),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update activity");
+      }
+
+      toast.success("Offline activity updated successfully");
+      setCreateDialogOpen(false);
+      setIsEditing(false);
+      setSelectedActivity(null);
+      resetCreateForm();
+      loadActivities();
+    } catch (err) {
+      console.error("Error updating activity:", err);
+      toast.error(
+        err instanceof Error ? err.message : "Failed to update activity"
+      );
+    }
+  };
+
+  const handleDeleteActivity = async (activity: OfflineActivity) => {
+    try {
+      if (!confirm(`Are you sure you want to delete "${activity.name}"?`)) {
+        return;
+      }
+
+      const response = await authenticatedFetch(
+        `/api/activities/offline/${activity.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete activity");
+      }
+
+      toast.success("Offline activity deleted successfully");
+      loadActivities();
+    } catch (err) {
+      console.error("Error deleting activity:", err);
+      toast.error(
+        err instanceof Error ? err.message : "Failed to delete activity"
+      );
+    }
+  };
+
+  const openEditDialog = (activity: OfflineActivity) => {
+    setSelectedActivity(activity);
+    setCreateFormData({
+      name: activity.name,
+      description: activity.description || "",
+      latitude: activity.latitude,
+      longitude: activity.longitude,
+      city: activity.city,
+      district: activity.district,
+      state: activity.state,
+      duration: activity.duration,
+      altitude: activity.altitude,
+      difficulty_level: activity.difficulty_level,
+      guide_required: activity.guide_required,
+      cost_per_person: activity.cost_per_person,
+      nearest_town: "",
+      best_season: "",
+      permits_required: "",
+      equipment_needed: "",
+      safety_tips: "",
+      minimum_age: undefined,
+      maximum_age: undefined,
+      minimum_people: undefined,
+      maximum_people: undefined,
+    });
+    setIsEditing(true);
+    setCreateDialogOpen(true);
+  };
+
   const filteredActivities = activities.filter(
     (activity) =>
       activity.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       activity.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
       activity.state.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case "easy":
@@ -238,7 +330,6 @@ export function OfflineActivitiesManagement() {
         return "bg-gray-100 text-gray-800";
     }
   };
-
   if (loading) {
     return (
       <Card>
@@ -252,7 +343,6 @@ export function OfflineActivitiesManagement() {
       </Card>
     );
   }
-
   return (
     <div className="space-y-4">
       <Card>
@@ -270,7 +360,6 @@ export function OfflineActivitiesManagement() {
                 className="flex-1"
               />
             </div>
-
             <Select
               value={difficultyFilter}
               onValueChange={setDifficultyFilter}
@@ -285,18 +374,15 @@ export function OfflineActivitiesManagement() {
                 <SelectItem value="hard">Hard</SelectItem>
               </SelectContent>
             </Select>
-
             <Input
               placeholder="Filter by state..."
               value={stateFilter}
               onChange={(e) => setStateFilter(e.target.value)}
               className="w-full md:w-[180px]"
             />
-
             <Button onClick={loadActivities} variant="outline">
               Apply Filters
             </Button>
-
             <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
               <DialogTrigger asChild>
                 <Button>
@@ -304,237 +390,228 @@ export function OfflineActivitiesManagement() {
                   Add Activity
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogContent className="h-screen w-screen max-w-none overflow-y-auto left-0 top-0 translate-x-0 translate-y-0 sm:rounded-none sm:max-w-none">
                 <DialogHeader>
-                  <DialogTitle>Create Offline Activity</DialogTitle>
+                  <DialogTitle>
+                    {isEditing
+                      ? "Edit Offline Activity"
+                      : "Create Offline Activity"}
+                  </DialogTitle>
                   <DialogDescription>
-                    Add a new offline activity to the system
+                    {isEditing
+                      ? "Update the offline activity information"
+                      : "Add a new offline activity to the system"}
                   </DialogDescription>
                 </DialogHeader>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Activity Name *</Label>
-                    <Input
-                      id="name"
-                      value={createFormData.name}
-                      onChange={(e) =>
-                        setCreateFormData({
-                          ...createFormData,
-                          name: e.target.value,
-                        })
-                      }
-                      placeholder="Enter activity name"
-                    />
+                <div className="flex gap-8 py-4 min-h-[600px] max-w-full">
+                  {/* Left Panel - Form Fields */}
+                  <div className="flex-[2] space-y-4 overflow-y-auto max-h-[700px] max-w-full pr-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Activity Name *</Label>
+                        <Input
+                          id="name"
+                          value={createFormData.name}
+                          onChange={(e) =>
+                            setCreateFormData({
+                              ...createFormData,
+                              name: e.target.value,
+                            })
+                          }
+                          placeholder="Enter activity name"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="difficulty">Difficulty Level *</Label>
+                        <Select
+                          value={createFormData.difficulty_level}
+                          onValueChange={(value: any) =>
+                            setCreateFormData({
+                              ...createFormData,
+                              difficulty_level: value,
+                            })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="easy">Easy</SelectItem>
+                            <SelectItem value="moderate">Moderate</SelectItem>
+                            <SelectItem value="hard">Hard</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2 md:col-span-2">
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea
+                          id="description"
+                          value={createFormData.description}
+                          onChange={(e) =>
+                            setCreateFormData({
+                              ...createFormData,
+                              description: e.target.value,
+                            })
+                          }
+                          placeholder="Enter activity description"
+                          rows={3}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="city">City *</Label>
+                        <Input
+                          id="city"
+                          value={createFormData.city}
+                          onChange={(e) =>
+                            setCreateFormData({
+                              ...createFormData,
+                              city: e.target.value,
+                            })
+                          }
+                          placeholder="Enter city"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="district">District *</Label>
+                        <Input
+                          id="district"
+                          value={createFormData.district}
+                          onChange={(e) =>
+                            setCreateFormData({
+                              ...createFormData,
+                              district: e.target.value,
+                            })
+                          }
+                          placeholder="Enter district"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="state">State *</Label>
+                        <Input
+                          id="state"
+                          value={createFormData.state}
+                          onChange={(e) =>
+                            setCreateFormData({
+                              ...createFormData,
+                              state: e.target.value,
+                            })
+                          }
+                          placeholder="Enter state"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="nearest_town">Nearest Town</Label>
+                        <Input
+                          id="nearest_town"
+                          value={createFormData.nearest_town}
+                          onChange={(e) =>
+                            setCreateFormData({
+                              ...createFormData,
+                              nearest_town: e.target.value,
+                            })
+                          }
+                          placeholder="Enter nearest town"
+                        />
+                      </div>
+                    </div>
+                    {/* Additional Information Section */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="duration">Duration (hours)</Label>
+                        <Input
+                          id="duration"
+                          type="number"
+                          value={createFormData.duration || ""}
+                          onChange={(e) =>
+                            setCreateFormData({
+                              ...createFormData,
+                              duration: parseInt(e.target.value) || undefined,
+                            })
+                          }
+                          placeholder="Enter duration in hours"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="altitude">Altitude (meters)</Label>
+                        <Input
+                          id="altitude"
+                          type="number"
+                          value={createFormData.altitude || ""}
+                          onChange={(e) =>
+                            setCreateFormData({
+                              ...createFormData,
+                              altitude: parseInt(e.target.value) || undefined,
+                            })
+                          }
+                          placeholder="Enter altitude"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="cost">Cost per Person</Label>
+                        <Input
+                          id="cost"
+                          type="number"
+                          step="0.01"
+                          value={createFormData.cost_per_person || ""}
+                          onChange={(e) =>
+                            setCreateFormData({
+                              ...createFormData,
+                              cost_per_person:
+                                parseFloat(e.target.value) || undefined,
+                            })
+                          }
+                          placeholder="Enter cost per person"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="best_season">Best Season</Label>
+                        <Input
+                          id="best_season"
+                          value={createFormData.best_season}
+                          onChange={(e) =>
+                            setCreateFormData({
+                              ...createFormData,
+                              best_season: e.target.value,
+                            })
+                          }
+                          placeholder="Enter best season"
+                        />
+                      </div>
+                    </div>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="difficulty">Difficulty Level *</Label>
-                    <Select
-                      value={createFormData.difficulty_level}
-                      onValueChange={(value: any) =>
+                  {/* Right Panel - Location Selection */}
+                  <div className="flex-[1] max-w-md border-l border-gray-200 pl-8">
+                    <LocationSelector
+                      latitude={createFormData.latitude}
+                      longitude={createFormData.longitude}
+                      onLocationChange={(lat, lng) =>
                         setCreateFormData({
                           ...createFormData,
-                          difficulty_level: value,
+                          latitude: lat,
+                          longitude: lng,
                         })
                       }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="easy">Easy</SelectItem>
-                        <SelectItem value="moderate">Moderate</SelectItem>
-                        <SelectItem value="hard">Hard</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea
-                      id="description"
-                      value={createFormData.description}
-                      onChange={(e) =>
-                        setCreateFormData({
-                          ...createFormData,
-                          description: e.target.value,
-                        })
-                      }
-                      placeholder="Enter activity description"
-                      rows={3}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="city">City *</Label>
-                    <Input
-                      id="city"
-                      value={createFormData.city}
-                      onChange={(e) =>
-                        setCreateFormData({
-                          ...createFormData,
-                          city: e.target.value,
-                        })
-                      }
-                      placeholder="Enter city"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="district">District *</Label>
-                    <Input
-                      id="district"
-                      value={createFormData.district}
-                      onChange={(e) =>
-                        setCreateFormData({
-                          ...createFormData,
-                          district: e.target.value,
-                        })
-                      }
-                      placeholder="Enter district"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="state">State *</Label>
-                    <Input
-                      id="state"
-                      value={createFormData.state}
-                      onChange={(e) =>
-                        setCreateFormData({
-                          ...createFormData,
-                          state: e.target.value,
-                        })
-                      }
-                      placeholder="Enter state"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="nearest_town">Nearest Town</Label>
-                    <Input
-                      id="nearest_town"
-                      value={createFormData.nearest_town}
-                      onChange={(e) =>
-                        setCreateFormData({
-                          ...createFormData,
-                          nearest_town: e.target.value,
-                        })
-                      }
-                      placeholder="Enter nearest town"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="latitude">Latitude *</Label>
-                    <Input
-                      id="latitude"
-                      type="number"
-                      step="any"
-                      value={createFormData.latitude || ""}
-                      onChange={(e) =>
-                        setCreateFormData({
-                          ...createFormData,
-                          latitude: parseFloat(e.target.value) || 0,
-                        })
-                      }
-                      placeholder="Enter latitude"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="longitude">Longitude *</Label>
-                    <Input
-                      id="longitude"
-                      type="number"
-                      step="any"
-                      value={createFormData.longitude || ""}
-                      onChange={(e) =>
-                        setCreateFormData({
-                          ...createFormData,
-                          longitude: parseFloat(e.target.value) || 0,
-                        })
-                      }
-                      placeholder="Enter longitude"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="duration">Duration (hours)</Label>
-                    <Input
-                      id="duration"
-                      type="number"
-                      value={createFormData.duration || ""}
-                      onChange={(e) =>
-                        setCreateFormData({
-                          ...createFormData,
-                          duration: parseInt(e.target.value) || undefined,
-                        })
-                      }
-                      placeholder="Enter duration in hours"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="altitude">Altitude (meters)</Label>
-                    <Input
-                      id="altitude"
-                      type="number"
-                      value={createFormData.altitude || ""}
-                      onChange={(e) =>
-                        setCreateFormData({
-                          ...createFormData,
-                          altitude: parseInt(e.target.value) || undefined,
-                        })
-                      }
-                      placeholder="Enter altitude"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="cost">Cost per Person</Label>
-                    <Input
-                      id="cost"
-                      type="number"
-                      step="0.01"
-                      value={createFormData.cost_per_person || ""}
-                      onChange={(e) =>
-                        setCreateFormData({
-                          ...createFormData,
-                          cost_per_person:
-                            parseFloat(e.target.value) || undefined,
-                        })
-                      }
-                      placeholder="Enter cost per person"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="best_season">Best Season</Label>
-                    <Input
-                      id="best_season"
-                      value={createFormData.best_season}
-                      onChange={(e) =>
-                        setCreateFormData({
-                          ...createFormData,
-                          best_season: e.target.value,
-                        })
-                      }
-                      placeholder="Enter best season"
                     />
                   </div>
                 </div>
-
                 <DialogFooter>
                   <Button
                     variant="outline"
-                    onClick={() => setCreateDialogOpen(false)}
+                    onClick={() => {
+                      setCreateDialogOpen(false);
+                      setIsEditing(false);
+                      setSelectedActivity(null);
+                      resetCreateForm();
+                    }}
                   >
                     Cancel
                   </Button>
-                  <Button onClick={handleCreateActivity}>
-                    Create Activity
+                  <Button
+                    onClick={
+                      isEditing ? handleEditActivity : handleCreateActivity
+                    }
+                  >
+                    {isEditing ? "Update Activity" : "Create Activity"}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -546,7 +623,6 @@ export function OfflineActivitiesManagement() {
               <p className="text-sm text-red-600">{error}</p>
             </div>
           )}
-
           <div className="rounded-md border">
             <Table>
               <TableHeader>
@@ -628,14 +704,16 @@ export function OfflineActivitiesManagement() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => {
-                              setSelectedActivity(activity);
-                              setEditDialogOpen(true);
-                            }}
+                            onClick={() => openEditDialog(activity)}
                           >
                             <Edit className="w-4 h-4" />
                           </Button>
-                          <Button variant="outline" size="sm">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="hover:bg-red-50 hover:text-red-600 hover:border-red-200"
+                            onClick={() => handleDeleteActivity(activity)}
+                          >
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>

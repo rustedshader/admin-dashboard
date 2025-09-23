@@ -62,7 +62,7 @@ const ClientSideMap = ({
 
   if (!isClient || !mapComponents) {
     return (
-      <div className="w-full h-96 rounded-lg border border-gray-300 flex items-center justify-center bg-gray-50">
+      <div className="w-full h-full rounded-lg border border-gray-300 flex items-center justify-center bg-gray-50">
         <div className="text-gray-500 flex items-center gap-2">
           <div className="animate-spin w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full"></div>
           Loading map...
@@ -74,7 +74,7 @@ const ClientSideMap = ({
   const { MapContainer, TileLayer, Marker, LocationMarker } = mapComponents;
 
   return (
-    <div className="w-full h-96 rounded-lg border border-gray-300 overflow-hidden">
+    <div className="w-full h-full rounded-lg border border-gray-300 overflow-hidden">
       <MapContainer
         center={[26.2041, 92.9376]} // Northeast India center
         zoom={7}
