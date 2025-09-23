@@ -32,7 +32,6 @@ export const API_ENDPOINTS = {
       details: (userId: number) => `/admin/users/${userId}`,
       updateStatus: (userId: number) => `/admin/users/${userId}/status`,
       stats: "/admin/admin/stats",
-      unverified: "/admin/unverified",
     },
     blockchain: {
       issue: "/admin/issue-blockchain-id",

@@ -19,7 +19,6 @@ import { toast } from "sonner";
 import {
   Users,
   UserCheck,
-  UserX,
   UserPlus,
   Shield,
   Activity,
@@ -127,8 +126,8 @@ export default function UserManagementPage() {
           <div>
             <h1 className="text-3xl font-bold">User Management</h1>
             <p className="text-muted-foreground mt-2">
-              Manage tourist registrations, verify KYC documents, and issue
-              blockchain-based tourist IDs
+              Manage tourist registrations and issue blockchain-based tourist
+              IDs (KYC verification happens automatically)
             </p>
           </div>
           <Button onClick={handleRefresh} variant="outline">
@@ -140,7 +139,7 @@ export default function UserManagementPage() {
 
       {/* Statistics Cards */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -172,7 +171,7 @@ export default function UserManagementPage() {
                 {stats.by_verification.verified}
               </div>
               <div className="text-xs text-muted-foreground">
-                {stats.by_verification.unverified} pending verification
+                {stats.by_verification.unverified} without blockchain ID
               </div>
             </CardContent>
           </Card>
@@ -193,24 +192,6 @@ export default function UserManagementPage() {
               </div>
             </CardContent>
           </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Blockchain IDs
-              </CardTitle>
-              <Shield className="h-4 w-4 text-purple-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-purple-600">
-                {stats.blockchain_ids_issued}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                {stats.by_verification.verified - stats.blockchain_ids_issued}{" "}
-                eligible for issuance
-              </div>
-            </CardContent>
-          </Card>
         </div>
       )}
 
@@ -224,36 +205,12 @@ export default function UserManagementPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Users</SelectItem>
-              <SelectItem value="unverified">Unverified Users</SelectItem>
-              <SelectItem value="no-blockchain">
-                Ready for Blockchain ID
-              </SelectItem>
               <SelectItem value="active">Active Users</SelectItem>
               <SelectItem value="inactive">Inactive Users</SelectItem>
               <SelectItem value="tourist">Tourists Only</SelectItem>
               <SelectItem value="guide">Guides Only</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-
-        <div className="flex space-x-2">
-          <Button
-            variant={currentFilter === "unverified" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setCurrentFilter("unverified")}
-          >
-            <UserX className="w-4 h-4 mr-2" />
-            Pending Verification ({stats?.by_verification.unverified || 0})
-          </Button>
-
-          <Button
-            variant={currentFilter === "no-blockchain" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setCurrentFilter("no-blockchain")}
-          >
-            <Shield className="w-4 h-4 mr-2" />
-            Ready for Blockchain ID
-          </Button>
         </div>
       </div>
 

@@ -101,9 +101,7 @@ export function UserList({ onUserSelect, filter = "all" }: UserListProps) {
       });
 
       // Handle special filter cases
-      if (filter === "unverified") {
-        endpoint = "/api/users/unverified";
-      } else if (filter === "no-blockchain") {
+      if (filter === "no-blockchain") {
         endpoint = "/api/admin/users/no-blockchain-id";
       } else {
         // Regular filtering for the main endpoint
@@ -169,14 +167,6 @@ export function UserList({ onUserSelect, filter = "all" }: UserListProps) {
   };
 
   const getStatusBadge = (user: User) => {
-    if (!user.is_active) {
-      return (
-        <Badge variant="destructive">
-          <XCircle className="w-3 h-3 mr-1" />
-          Blocked
-        </Badge>
-      );
-    }
     if (user.is_kyc_verified) {
       return (
         <Badge variant="default">
@@ -206,7 +196,7 @@ export function UserList({ onUserSelect, filter = "all" }: UserListProps) {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -237,18 +227,6 @@ export function UserList({ onUserSelect, filter = "all" }: UserListProps) {
           <CardContent>
             <div className="text-2xl font-bold text-yellow-600">
               {stats.pending}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Blocked</CardTitle>
-            <UserX className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {stats.blocked}
             </div>
           </CardContent>
         </Card>

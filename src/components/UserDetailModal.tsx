@@ -71,41 +71,6 @@ export function UserDetailModal({
 
   if (!user) return null;
 
-  const handleVerifyUser = async () => {
-    setActionLoading("verify");
-    try {
-      const response = await authenticatedFetch(
-        `/api/users/${user.id}/verify`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            verified: true,
-            verification_notes: `KYC verified by admin for user ${user.first_name} ${user.last_name}`,
-            verification_date: new Date().toISOString(),
-          }),
-        }
-      );
-
-      if (response.ok) {
-        toast.success("User verified successfully");
-        onUserUpdate();
-        onClose();
-      } else {
-        const errorData = await response.json();
-        toast.error("Failed to verify user");
-        console.error("Verification error details:", errorData);
-      }
-    } catch (error) {
-      toast.error("Error verifying user");
-      console.error("Verification error:", error);
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
   const handleIssueBlockchainId = async () => {
     setActionLoading("blockchain");
     try {
@@ -271,20 +236,6 @@ export function UserDetailModal({
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">Created:</span>
-                    <span className="text-sm">
-                      {formatDate(user.created_at)}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">Updated:</span>
-                    <span className="text-sm">
-                      {formatDate(user.updated_at)}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
                     <span className="font-medium">User ID:</span>
                     <span className="text-sm font-mono">{user.id}</span>
                   </div>
@@ -294,10 +245,9 @@ export function UserDetailModal({
           </Card>
 
           <Tabs defaultValue="verification" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="verification">Verification</TabsTrigger>
               <TabsTrigger value="blockchain">Blockchain ID</TabsTrigger>
-              <TabsTrigger value="actions">Actions</TabsTrigger>
             </TabsList>
 
             <TabsContent value="verification" className="space-y-4">
@@ -325,22 +275,11 @@ export function UserDetailModal({
                           </h4>
                           <p className="text-sm text-muted-foreground">
                             {user.is_kyc_verified
-                              ? "User has completed KYC verification"
-                              : "User KYC verification is pending admin approval"}
+                              ? "User has completed KYC verification automatically when blockchain ID was issued"
+                              : "User KYC verification will be completed automatically when blockchain ID is issued"}
                           </p>
                         </div>
                       </div>
-                      {!user.is_kyc_verified && (
-                        <Button
-                          onClick={handleVerifyUser}
-                          disabled={actionLoading === "verify"}
-                        >
-                          {actionLoading === "verify" && (
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          )}
-                          Verify User
-                        </Button>
-                      )}
                     </div>
 
                     <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -434,81 +373,6 @@ export function UserDetailModal({
                         <p className="text-xs font-mono bg-muted p-2 rounded break-all">
                           {user.tourist_id_transaction_hash}
                         </p>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="actions" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Settings className="h-5 w-5" />
-                    <span>User Actions</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h4 className="font-medium">Account Status</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {user.is_active
-                            ? "Account is active"
-                            : "Account is blocked"}
-                        </p>
-                      </div>
-                      <Button
-                        variant={user.is_active ? "destructive" : "default"}
-                        onClick={handleToggleUserStatus}
-                        disabled={actionLoading === "status"}
-                      >
-                        {actionLoading === "status" && (
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        )}
-                        {user.is_active ? "Block User" : "Activate User"}
-                      </Button>
-                    </div>
-
-                    {!user.is_kyc_verified && (
-                      <div className="flex items-center justify-between p-4 border rounded-lg">
-                        <div>
-                          <h4 className="font-medium">Manual Verification</h4>
-                          <p className="text-sm text-muted-foreground">
-                            Manually verify user's KYC documents
-                          </p>
-                        </div>
-                        <Button
-                          onClick={handleVerifyUser}
-                          disabled={actionLoading === "verify"}
-                        >
-                          {actionLoading === "verify" && (
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          )}
-                          Verify KYC
-                        </Button>
-                      </div>
-                    )}
-
-                    {user.is_kyc_verified && !user.blockchain_address && (
-                      <div className="flex items-center justify-between p-4 border rounded-lg">
-                        <div>
-                          <h4 className="font-medium">Issue Tourist ID</h4>
-                          <p className="text-sm text-muted-foreground">
-                            Issue blockchain-based tourist identification
-                          </p>
-                        </div>
-                        <Button
-                          onClick={handleIssueBlockchainId}
-                          disabled={actionLoading === "blockchain"}
-                        >
-                          {actionLoading === "blockchain" && (
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          )}
-                          Issue Blockchain ID
-                        </Button>
                       </div>
                     )}
                   </div>
