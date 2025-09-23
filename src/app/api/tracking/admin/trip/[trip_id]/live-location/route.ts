@@ -4,7 +4,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { trip_id: string } }
+  { params }: { params: Promise<{ trip_id: string }> }
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -16,7 +16,8 @@ export async function GET(
       );
     }
 
-    const tripId = params.trip_id;
+    const resolvedParams = await params;
+    const tripId = resolvedParams.trip_id;
 
     const response = await fetch(
       `${API_BASE_URL}/tracking/admin/trip/${tripId}/live-location`,

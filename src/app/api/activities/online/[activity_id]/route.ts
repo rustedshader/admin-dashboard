@@ -3,7 +3,7 @@ import { API_ENDPOINTS, buildApiUrl } from "@/lib/api";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { activity_id: string } }
+  { params }: { params: Promise<{ activity_id: string }> }
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -15,7 +15,8 @@ export async function GET(
       );
     }
 
-    const activityId = parseInt(params.activity_id);
+    const resolvedParams = await params;
+    const activityId = parseInt(resolvedParams.activity_id);
     if (isNaN(activityId)) {
       return NextResponse.json(
         { error: "Invalid activity ID" },
@@ -59,7 +60,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { activity_id: string } }
+  { params }: { params: Promise<{ activity_id: string }> }
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -71,7 +72,8 @@ export async function PUT(
       );
     }
 
-    const activityId = parseInt(params.activity_id);
+    const resolvedParams = await params;
+    const activityId = parseInt(resolvedParams.activity_id);
     if (isNaN(activityId)) {
       return NextResponse.json(
         { error: "Invalid activity ID" },
@@ -117,7 +119,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { activity_id: string } }
+  { params }: { params: Promise<{ activity_id: string }> }
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -129,7 +131,8 @@ export async function DELETE(
       );
     }
 
-    const activityId = parseInt(params.activity_id);
+    const resolvedParams = await params;
+    const activityId = parseInt(resolvedParams.activity_id);
     if (isNaN(activityId)) {
       return NextResponse.json(
         { error: "Invalid activity ID" },

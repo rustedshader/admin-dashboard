@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { API_ENDPOINTS, buildApiUrl } from "@/lib/api";
 
 export async function GET(
   request: NextRequest,

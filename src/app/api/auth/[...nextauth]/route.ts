@@ -82,7 +82,7 @@ async function refreshAccessToken(token: any): Promise<any> {
   }
 }
 
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "credentials",

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { API_ENDPOINTS, buildApiUrl } from "@/lib/api";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
-
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get("authorization");

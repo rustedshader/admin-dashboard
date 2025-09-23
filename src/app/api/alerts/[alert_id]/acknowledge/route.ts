@@ -4,7 +4,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { alert_id: string } }
+  { params }: { params: Promise<{ alert_id: string }> }
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -16,7 +16,8 @@ export async function POST(
       );
     }
 
-    const { alert_id } = params;
+    const resolvedParams = await params;
+    const { alert_id } = resolvedParams;
 
     const response = await fetch(
       `${API_BASE_URL}/alerts/${alert_id}/acknowledge`,

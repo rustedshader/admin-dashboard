@@ -3,7 +3,7 @@ import { API_ENDPOINTS, buildApiUrl } from "@/lib/api";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { accommodation_id: string } }
+  { params }: { params: Promise<{ accommodation_id: string }> }
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -15,7 +15,8 @@ export async function GET(
       );
     }
 
-    const accommodationId = parseInt(params.accommodation_id);
+    const resolvedParams = await params;
+    const accommodationId = parseInt(resolvedParams.accommodation_id);
     if (isNaN(accommodationId)) {
       return NextResponse.json(
         { error: "Invalid accommodation ID" },
@@ -59,7 +60,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { accommodation_id: string } }
+  { params }: { params: Promise<{ accommodation_id: string }> }
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -71,7 +72,8 @@ export async function PUT(
       );
     }
 
-    const accommodationId = parseInt(params.accommodation_id);
+    const resolvedParams = await params;
+    const accommodationId = parseInt(resolvedParams.accommodation_id);
     if (isNaN(accommodationId)) {
       return NextResponse.json(
         { error: "Invalid accommodation ID" },
@@ -119,7 +121,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { accommodation_id: string } }
+  { params }: { params: Promise<{ accommodation_id: string }> }
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -131,7 +133,8 @@ export async function DELETE(
       );
     }
 
-    const accommodationId = parseInt(params.accommodation_id);
+    const resolvedParams = await params;
+    const accommodationId = parseInt(resolvedParams.accommodation_id);
     if (isNaN(accommodationId)) {
       return NextResponse.json(
         { error: "Invalid accommodation ID" },

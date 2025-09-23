@@ -30,15 +30,7 @@ import {
 import { useAuthenticatedFetch } from "@/hooks/useAuth";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import {
-  Shield,
-  User,
-  MapPin,
-  AlertCircle,
-  IdCard,
-  Search,
-  Clock,
-} from "lucide-react";
+import { Shield, User, AlertCircle, IdCard, Search, Clock } from "lucide-react";
 
 interface Itinerary {
   id: number;

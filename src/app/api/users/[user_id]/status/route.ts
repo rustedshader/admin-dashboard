@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { user_id: string } }
+  { params }: { params: Promise<{ user_id: string }> }
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -15,7 +15,8 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { user_id } = params;
+    const resolvedParams = await params;
+    const { user_id } = resolvedParams;
 
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/users/admin/${user_id}/status`,

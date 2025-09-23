@@ -15,7 +15,6 @@ import {
   MapPin,
   User,
   Filter,
-  Plus,
   Search,
 } from "lucide-react";
 import { useAuthenticatedFetch } from "@/hooks/useAuth";
