@@ -18,24 +18,20 @@ import {
   Navigation,
   Calendar,
   RefreshCw,
+  Route,
+  Clock,
 } from "lucide-react";
 import { useAuthenticatedFetch } from "@/hooks/useAuth";
 import dynamic from "next/dynamic";
 
-const MapComponent = dynamic(() => import("@/components/MapComponent"), {
-  ssr: false,
-});
+const TripMapComponent = dynamic(
+  () => import("@/components/TripMapComponent"),
+  {
+    ssr: false,
+  }
+);
 
-interface DashboardStats {
-  totalUsers: number;
-  totalActiveTrips: number;
-  emergencyAlerts: number;
-  pendingVerifications: number;
-  todayRegistrations: number;
-  blockchainIdsIssued: number;
-}
-
-interface ActiveTourist {
+interface ActiveTrip {
   trip_id: number;
   user_id: number;
   user_name: string;
@@ -43,12 +39,24 @@ interface ActiveTourist {
   trip_type: string;
   status: string;
   current_phase?: string;
-  is_tracking_active: boolean;
-  tracking_started_at?: string;
-  hotel_info?: any;
-  destination_info?: any;
-  linked_device_id?: string;
-  last_location?: any;
+  destination?: string;
+  started_at?: string;
+  expected_end?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface TripLocation {
+  trip_id: number;
+  user_id: number;
+  user_name: string;
+  latitude: number;
+  longitude: number;
+  timestamp: string;
+  accuracy?: number;
+  altitude?: number;
+  speed?: number;
+  heading?: number;
 }
 
 interface AlertData {
@@ -57,25 +65,26 @@ interface AlertData {
   acknowledged_alerts: number;
   resolved_alerts: number;
   emergency_alerts: number;
-  deviation_alerts: number;
-  weather_alerts: number;
-  other_alerts: number;
+  high_priority_alerts: number;
+  medium_priority_alerts: number;
+  low_priority_alerts: number;
 }
 
 interface UserStats {
   total_users: number;
-  by_role: Record<string, number>;
-  by_verification: Record<string, number>;
-  by_status: Record<string, number>;
+  active_users: number;
+  inactive_users: number;
+  pending_verification: number;
+  verified_users: number;
   blockchain_ids_issued: number;
 }
 
 interface DashboardStats {
   totalUsers: number;
   totalActiveTrips: number;
+  totalAlerts: number;
   emergencyAlerts: number;
   pendingVerifications: number;
-  todayRegistrations: number;
   blockchainIdsIssued: number;
 }
 
@@ -86,12 +95,13 @@ const Home = () => {
   const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
     totalUsers: 0,
     totalActiveTrips: 0,
+    totalAlerts: 0,
     emergencyAlerts: 0,
     pendingVerifications: 0,
-    todayRegistrations: 0,
     blockchainIdsIssued: 0,
   });
-  const [activeTourists, setActiveTourists] = useState<ActiveTourist[]>([]);
+  const [activeTrips, setActiveTrips] = useState<ActiveTrip[]>([]);
+  const [tripLocations, setTripLocations] = useState<TripLocation[]>([]);
   const [alertStats, setAlertStats] = useState<AlertData | null>(null);
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
@@ -107,47 +117,91 @@ const Home = () => {
     try {
       setLoading(true);
 
-      // Fetch multiple APIs in parallel
-      const [activeTouristsRes, alertStatsRes, userStatsRes] =
+      // Fetch multiple APIs in parallel - using the correct available endpoints
+      const [activeTripsRes, tripLocationsRes, alertStatsRes, userStatsRes] =
         await Promise.allSettled([
-          authenticatedFetch("/api/tracking/admin/active-tourists"),
-          authenticatedFetch("/api/alerts/statistics"),
-          authenticatedFetch("/api/users/stats"),
+          authenticatedFetch("/api/admin/active-trips"),
+          authenticatedFetch("/api/admin/trip-locations"),
+          authenticatedFetch("/api/alerts/admin/stats"),
+          authenticatedFetch("/api/users/admin/stats"),
         ]);
 
-      // Process active tourists
-      if (
-        activeTouristsRes.status === "fulfilled" &&
-        activeTouristsRes.value.ok
-      ) {
-        const data = await activeTouristsRes.value.json();
-        setActiveTourists(data.tourists || []);
+      // Process active trips
+      if (activeTripsRes.status === "fulfilled" && activeTripsRes.value.ok) {
+        const data = await activeTripsRes.value.json();
+        console.log("Active trips data:", data); // Debug log
+
+        // Ensure we always set an array
+        let tripsArray = [];
+        if (Array.isArray(data)) {
+          tripsArray = data;
+        } else if (data.trips && Array.isArray(data.trips)) {
+          tripsArray = data.trips;
+        } else if (data.data && Array.isArray(data.data)) {
+          tripsArray = data.data;
+        }
+
+        setActiveTrips(tripsArray);
         setDashboardStats((prev) => ({
           ...prev,
-          totalActiveTrips: data.total_active_tourists || 0,
+          totalActiveTrips: tripsArray.length,
         }));
+      } else {
+        console.error("Failed to fetch active trips:", activeTripsRes);
+        setActiveTrips([]); // Ensure it's always an array
+      }
+
+      // Process trip locations
+      if (
+        tripLocationsRes.status === "fulfilled" &&
+        tripLocationsRes.value.ok
+      ) {
+        const data = await tripLocationsRes.value.json();
+        console.log("Trip locations data:", data); // Debug log
+
+        // Ensure we always set an array
+        let locationsArray = [];
+        if (Array.isArray(data)) {
+          locationsArray = data;
+        } else if (data.locations && Array.isArray(data.locations)) {
+          locationsArray = data.locations;
+        } else if (data.data && Array.isArray(data.data)) {
+          locationsArray = data.data;
+        }
+
+        setTripLocations(locationsArray);
+      } else {
+        console.error("Failed to fetch trip locations:", tripLocationsRes);
+        setTripLocations([]); // Ensure it's always an array
       }
 
       // Process alert statistics
       if (alertStatsRes.status === "fulfilled" && alertStatsRes.value.ok) {
         const data = await alertStatsRes.value.json();
+        console.log("Alert stats data:", data); // Debug log
         setAlertStats(data);
         setDashboardStats((prev) => ({
           ...prev,
+          totalAlerts: data.total_alerts || 0,
           emergencyAlerts: data.emergency_alerts || 0,
         }));
+      } else {
+        console.error("Failed to fetch alert stats:", alertStatsRes);
       }
 
       // Process user statistics
       if (userStatsRes.status === "fulfilled" && userStatsRes.value.ok) {
         const data = await userStatsRes.value.json();
+        console.log("User stats data:", data); // Debug log
         setUserStats(data);
         setDashboardStats((prev) => ({
           ...prev,
           totalUsers: data.total_users || 0,
           blockchainIdsIssued: data.blockchain_ids_issued || 0,
-          pendingVerifications: data.by_verification?.unverified || 0,
+          pendingVerifications: data.pending_verification || 0,
         }));
+      } else {
+        console.error("Failed to fetch user stats:", userStatsRes);
       }
 
       setLastUpdated(new Date());
@@ -261,6 +315,12 @@ const Home = () => {
             color="text-green-600"
           />
           <StatCard
+            title="Total Alerts"
+            value={dashboardStats.totalAlerts}
+            icon={AlertTriangle}
+            color="text-orange-600"
+          />
+          <StatCard
             title="Emergency Alerts"
             value={dashboardStats.emergencyAlerts}
             icon={AlertTriangle}
@@ -270,7 +330,7 @@ const Home = () => {
             title="Pending Verifications"
             value={dashboardStats.pendingVerifications}
             icon={UserCheck}
-            color="text-orange-600"
+            color="text-yellow-600"
           />
           <StatCard
             title="Blockchain IDs"
@@ -290,58 +350,56 @@ const Home = () => {
 
           <TabsContent value="monitoring" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Active Tourists List */}
+              {/* Active Trips List */}
               <div className="lg:col-span-1">
                 <Card className="h-[600px]">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Activity className="w-5 h-5" />
-                      Active Tourists ({activeTourists.length})
+                      <Route className="w-5 h-5" />
+                      Active Trips (
+                      {Array.isArray(activeTrips) ? activeTrips.length : 0})
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-0">
                     <ScrollArea className="h-[500px] px-6">
                       <div className="space-y-3">
-                        {activeTourists.map((tourist) => (
-                          <div
-                            key={tourist.trip_id}
-                            className="p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-                          >
-                            <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-medium">
-                                {tourist.user_name}
-                              </h4>
-                              {getStatusBadge(tourist.status)}
-                            </div>
-                            <div className="space-y-1 text-sm text-muted-foreground">
-                              <p>Trip ID: {tourist.trip_id}</p>
-                              <p>Type: {tourist.trip_type}</p>
-                              {tourist.current_phase && (
-                                <p>Phase: {tourist.current_phase}</p>
-                              )}
-                              {tourist.linked_device_id && (
-                                <p>Device: {tourist.linked_device_id}</p>
-                              )}
-                              <div className="flex items-center gap-2">
-                                <div
-                                  className={`w-2 h-2 rounded-full ${
-                                    tourist.is_tracking_active
-                                      ? "bg-green-500"
-                                      : "bg-gray-400"
-                                  }`}
-                                />
-                                <span>
-                                  {tourist.is_tracking_active
-                                    ? "Tracking Active"
-                                    : "No Tracking"}
-                                </span>
+                        {Array.isArray(activeTrips) &&
+                          activeTrips.map((trip) => (
+                            <div
+                              key={trip.trip_id}
+                              className="p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                            >
+                              <div className="flex items-center justify-between mb-2">
+                                <h4 className="font-medium">
+                                  {trip.user_name || `User ${trip.user_id}`}
+                                </h4>
+                                {getStatusBadge(trip.status)}
+                              </div>
+                              <div className="space-y-1 text-sm text-muted-foreground">
+                                <p>Trip ID: {trip.trip_id}</p>
+                                <p>Type: {trip.trip_type}</p>
+                                {trip.destination && (
+                                  <p>Destination: {trip.destination}</p>
+                                )}
+                                {trip.current_phase && (
+                                  <p>Phase: {trip.current_phase}</p>
+                                )}
+                                {trip.started_at && (
+                                  <p className="flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    Started:{" "}
+                                    {new Date(
+                                      trip.started_at
+                                    ).toLocaleDateString()}
+                                  </p>
+                                )}
                               </div>
                             </div>
-                          </div>
-                        ))}
-                        {activeTourists.length === 0 && (
+                          ))}
+                        {(!Array.isArray(activeTrips) ||
+                          activeTrips.length === 0) && (
                           <div className="text-center py-8 text-muted-foreground">
-                            No active tourists found
+                            No active trips found
                           </div>
                         )}
                       </div>
@@ -350,23 +408,75 @@ const Home = () => {
                 </Card>
               </div>
 
-              {/* Map */}
+              {/* Real-time Locations Map */}
               <div className="lg:col-span-2">
                 <Card className="h-[600px]">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <MapPin className="w-5 h-5" />
-                      Real-time Tourist Tracking
+                      Live Location Tracking (
+                      {Array.isArray(tripLocations) ? tripLocations.length : 0})
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-4">
                     <div className="h-[500px]">
-                      <MapComponent />
+                      <TripMapComponent
+                        tripLocations={tripLocations}
+                        height="500px"
+                      />
                     </div>
                   </CardContent>
                 </Card>
               </div>
             </div>
+
+            {/* Location Details List */}
+            {Array.isArray(tripLocations) && tripLocations.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="w-5 h-5" />
+                    Location Details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ScrollArea className="h-64">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {Array.isArray(tripLocations) &&
+                        tripLocations.map((location, index) => (
+                          <div
+                            key={`${location.trip_id}-${index}`}
+                            className="p-3 rounded-lg border bg-card"
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-medium text-sm">
+                                {location.user_name ||
+                                  `User ${location.user_id}`}
+                              </h4>
+                              <Badge variant="outline" className="text-xs">
+                                Trip {location.trip_id}
+                              </Badge>
+                            </div>
+                            <div className="space-y-1 text-xs text-muted-foreground">
+                              <p>Lat: {location.latitude.toFixed(6)}</p>
+                              <p>Lng: {location.longitude.toFixed(6)}</p>
+                              <p>
+                                Updated:{" "}
+                                {new Date(
+                                  location.timestamp
+                                ).toLocaleTimeString()}
+                              </p>
+                              {location.accuracy && (
+                                <p>Accuracy: {location.accuracy}m</p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="alerts" className="space-y-6">
@@ -403,7 +513,7 @@ const Home = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Alert Breakdown</CardTitle>
+                    <CardTitle>Alert Priority Breakdown</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
@@ -414,21 +524,21 @@ const Home = () => {
                         </Badge>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span>Route Deviations</span>
+                        <span>High Priority</span>
                         <Badge variant="secondary">
-                          {alertStats.deviation_alerts}
+                          {alertStats.high_priority_alerts}
                         </Badge>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span>Weather Alerts</span>
+                        <span>Medium Priority</span>
                         <Badge variant="outline">
-                          {alertStats.weather_alerts}
+                          {alertStats.medium_priority_alerts}
                         </Badge>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span>Other Alerts</span>
+                        <span>Low Priority</span>
                         <Badge variant="outline">
-                          {alertStats.other_alerts}
+                          {alertStats.low_priority_alerts}
                         </Badge>
                       </div>
                     </div>
@@ -451,9 +561,11 @@ const Home = () => {
                             className="bg-red-600 h-2 rounded-full"
                             style={{
                               width: `${
-                                (alertStats.new_alerts /
-                                  alertStats.total_alerts) *
-                                100
+                                alertStats.total_alerts > 0
+                                  ? (alertStats.new_alerts /
+                                      alertStats.total_alerts) *
+                                    100
+                                  : 0
                               }%`,
                             }}
                           />
@@ -469,9 +581,11 @@ const Home = () => {
                             className="bg-yellow-600 h-2 rounded-full"
                             style={{
                               width: `${
-                                (alertStats.acknowledged_alerts /
-                                  alertStats.total_alerts) *
-                                100
+                                alertStats.total_alerts > 0
+                                  ? (alertStats.acknowledged_alerts /
+                                      alertStats.total_alerts) *
+                                    100
+                                  : 0
                               }%`,
                             }}
                           />
@@ -487,9 +601,11 @@ const Home = () => {
                             className="bg-green-600 h-2 rounded-full"
                             style={{
                               width: `${
-                                (alertStats.resolved_alerts /
-                                  alertStats.total_alerts) *
-                                100
+                                alertStats.total_alerts > 0
+                                  ? (alertStats.resolved_alerts /
+                                      alertStats.total_alerts) *
+                                    100
+                                  : 0
                               }%`,
                             }}
                           />
@@ -514,13 +630,13 @@ const Home = () => {
                   />
                   <StatCard
                     title="Verified Users"
-                    value={userStats.by_verification.verified || 0}
+                    value={userStats.verified_users || 0}
                     icon={UserCheck}
                     color="text-green-600"
                   />
                   <StatCard
                     title="Active Users"
-                    value={userStats.by_status.active || 0}
+                    value={userStats.active_users || 0}
                     icon={Activity}
                     color="text-purple-600"
                   />
@@ -535,21 +651,22 @@ const Home = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Card>
                     <CardHeader>
-                      <CardTitle>Users by Role</CardTitle>
+                      <CardTitle>User Status Breakdown</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
-                        {Object.entries(userStats.by_role).map(
-                          ([role, count]) => (
-                            <div
-                              key={role}
-                              className="flex justify-between items-center"
-                            >
-                              <span className="capitalize">{role}</span>
-                              <Badge variant="outline">{count}</Badge>
-                            </div>
-                          )
-                        )}
+                        <div className="flex justify-between items-center">
+                          <span>Active Users</span>
+                          <Badge variant="default">
+                            {userStats.active_users}
+                          </Badge>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span>Inactive Users</span>
+                          <Badge variant="secondary">
+                            {userStats.inactive_users}
+                          </Badge>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -560,25 +677,24 @@ const Home = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
-                        {Object.entries(userStats.by_verification).map(
-                          ([status, count]) => (
-                            <div
-                              key={status}
-                              className="flex justify-between items-center"
-                            >
-                              <span className="capitalize">{status}</span>
-                              <Badge
-                                variant={
-                                  status === "verified"
-                                    ? "default"
-                                    : "secondary"
-                                }
-                              >
-                                {count}
-                              </Badge>
-                            </div>
-                          )
-                        )}
+                        <div className="flex justify-between items-center">
+                          <span>Verified</span>
+                          <Badge variant="default">
+                            {userStats.verified_users}
+                          </Badge>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span>Pending Verification</span>
+                          <Badge variant="secondary">
+                            {userStats.pending_verification}
+                          </Badge>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span>Blockchain IDs Issued</span>
+                          <Badge variant="outline">
+                            {userStats.blockchain_ids_issued}
+                          </Badge>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

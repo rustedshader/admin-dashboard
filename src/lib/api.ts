@@ -53,6 +53,19 @@ export const API_ENDPOINTS = {
       validatePolygon: "/geofencing/validate-polygon",
     },
   },
+  // Alerts endpoints
+  alerts: {
+    list: "/alerts/",
+    create: "/alerts/",
+    details: (alertId: number) => `/alerts/${alertId}`,
+    resolve: (alertId: number) => `/alerts/${alertId}/resolve`,
+    acknowledge: (alertId: number) => `/alerts/${alertId}/acknowledge`,
+    nearby: "/alerts/nearby",
+    admin: {
+      all: "/alerts/admin/all",
+      stats: "/alerts/admin/stats",
+    },
+  },
   // Activities endpoints
   activities: {
     offline: {

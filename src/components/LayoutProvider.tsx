@@ -30,7 +30,7 @@ export function LayoutProvider({ children }: LayoutProviderProps) {
           <div className="flex h-full">
             <div className="flex-1">
               <div className="p-4 lg:p-6">
-                <SidebarTrigger className="mb-4 lg:hidden" />
+                <SidebarTrigger className="mb-4" />
                 {children}
               </div>
             </div>
