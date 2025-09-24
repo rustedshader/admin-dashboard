@@ -148,7 +148,7 @@ export function AppSidebar() {
           </div>
           <div>
             <h2 className="text-xl font-bold text-foreground">
-              Paryatak Sarthi
+              Surakshit
             </h2>
             <p className="text-sm text-muted-foreground">Admin Dashboard</p>
           </div>
