@@ -376,7 +376,7 @@ export function OfflineActivitiesManagement() {
             </Select>
             <Input
               placeholder="Filter by state..."
-              value={stateFilter}
+              value={stateFilter} 
               onChange={(e) => setStateFilter(e.target.value)}
               className="w-full md:w-[180px]"
             />
