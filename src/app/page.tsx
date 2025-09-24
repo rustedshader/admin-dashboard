@@ -281,15 +281,15 @@ const Home = () => {
     <div className="min-h-screen bg-background p-6">
       <div className="container mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="bg-primary h-35 flex p-2 items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Tourism Admin Dashboard</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-3xl text-white font-bold">Tourism Admin Dashboard</h1>
+            <p className="text-primary-foreground">
               Real-time monitoring and management system
             </p>
           </div>
           <div className="flex items-center gap-4">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-primary-foreground">
               Last updated:{" "}
               {isClient ? lastUpdated.toLocaleTimeString() : "Loading..."}
             </p>
@@ -341,7 +341,7 @@ const Home = () => {
         </div>
 
         {/* Main Content Tabs */}
-        <Tabs defaultValue="monitoring" className="w-full">
+        <Tabs defaultValue="monitoring" className=" w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="monitoring">Live Monitoring</TabsTrigger>
             <TabsTrigger value="alerts">Alert Management</TabsTrigger>

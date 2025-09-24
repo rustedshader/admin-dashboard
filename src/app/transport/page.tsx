@@ -204,8 +204,8 @@ export default function TrackingDevicesPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Tracking Device Management</h1>
+      <div className="bg-primary p-2 h-35 flex justify-between items-center">
+        <h1 className="text-3xl text-white font-bold">Tracking Device Management</h1>
         <Link href="/transport/add">
           <Button>
             <Plus className="w-4 h-4 mr-2" />

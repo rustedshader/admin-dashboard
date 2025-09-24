@@ -122,10 +122,10 @@ export default function UserManagementPage() {
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="mb-6">
-        <div className="flex justify-between items-center">
+        <div className="bg-primary p-2 h-35 flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">User Management</h1>
-            <p className="text-muted-foreground mt-2">
+            <h1 className="text-3xl text-white font-bold">User Management</h1>
+            <p className="text-primary-foreground mt-2">
               Manage tourist registrations and issue blockchain-based tourist
               IDs (KYC verification happens automatically)
             </p>
