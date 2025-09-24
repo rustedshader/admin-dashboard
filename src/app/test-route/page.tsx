@@ -188,13 +188,13 @@ const TestRoutePage = () => {
     <div className="min-h-screen bg-background p-6">
       <div className="container mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="bg-primary p-2 h-35 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
+            <h1 className="text-3xl text-white font-bold flex items-center gap-2">
               <Route className="w-8 h-8" />
               Test Route Calculator
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-primary-foreground">
               Select two points and calculate route with geofencing
             </p>
           </div>

@@ -249,8 +249,8 @@ export default function GeofencingManagement() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Geofencing Management</h1>
+      <div className="bg-primary p-2 h-35 flex justify-between items-center">
+        <h1 className="text-3xl text-white font-bold">Geofencing Management</h1>
         <div className="flex space-x-3">
           <Link href="/geofencing/add">
             <Button variant="outline">

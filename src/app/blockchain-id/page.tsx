@@ -297,10 +297,10 @@ export default function BlockchainIDIssuancePage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="bg-primary p-2 h-35 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Blockchain ID Issuance</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl text-white font-bold">Blockchain ID Issuance</h1>
+          <p className="text-primary-foreground">
             Issue blockchain IDs to verified users with active itineraries
           </p>
         </div>
