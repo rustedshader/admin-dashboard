@@ -34,12 +34,24 @@ export const API_ENDPOINTS = {
       stats: "/admin/admin/stats",
     },
     blockchain: {
-      issue: "/admin/issue-blockchain-id",
+      issue: "/admin/issue-blockchain-id", // Deprecated
     },
     trips: {
       active: "/admin/active-trips",
       locations: "/admin/latest-trip-locations",
     },
+  },
+  // New Blockchain ID endpoints
+  blockchainId: {
+    apply: "/blockchain-id/apply",
+    applications: "/blockchain-id/applications",
+    search: "/blockchain-id/applications/search",
+    issue: (applicationId: number) =>
+      `/blockchain-id/applications/${applicationId}/issue`,
+    reject: (applicationId: number) =>
+      `/blockchain-id/applications/${applicationId}/reject`,
+    statistics: "/blockchain-id/statistics",
+    myApplication: "/blockchain-id/my-application",
   },
   // Geofencing endpoints
   geofencing: {

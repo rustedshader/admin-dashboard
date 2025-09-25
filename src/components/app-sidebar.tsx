@@ -48,7 +48,7 @@ const mainItems = [
     icon: Users,
   },
   {
-    title: "Blockchain ID Issuance",
+    title: "Blockchain ID Management",
     url: "/blockchain-id",
     icon: IdCard,
   },
@@ -97,11 +97,6 @@ const mainItems = [
     url: "/trips/active",
     icon: Plane,
   },
-  {
-    title: "Map Tool",
-    url: "/maptool",
-    icon: Map,
-  },
 ];
 
 // Additional tools
@@ -147,9 +142,7 @@ export function AppSidebar() {
             <Map className="w-6 h-6 text-primary-foreground" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-foreground">
-              Surakshit
-            </h2>
+            <h2 className="text-xl font-bold text-foreground">Surakshit</h2>
             <p className="text-sm text-muted-foreground">Admin Dashboard</p>
           </div>
         </div>
