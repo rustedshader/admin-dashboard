@@ -51,14 +51,11 @@ const Login = () => {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4"
-      style={{ backgroundColor: "#2A777C" }}
-    >
-      <Card className="w-full max-w-4xl overflow-hidden shadow-2xl">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-cyan-600 to-teal-700 dark:from-gray-900 dark:to-gray-800">
+      <Card className="w-full max-w-4xl overflow-hidden shadow-2xl bg-card">
         <div className="flex flex-col md:flex-row">
           {/* Left side - Image */}
-          <div className="md:w-1/2 bg-gradient-to-br from-orange-100 to-green-100 p-8 flex items-center justify-center">
+          <div className="md:w-1/2 bg-gradient-to-br from-orange-100 to-green-100 dark:from-orange-900/20 dark:to-green-900/20 p-8 flex items-center justify-center">
             <div className="text-center">
               <Image
                 src={"/government-building.jpg"}
@@ -67,30 +64,30 @@ const Login = () => {
                 height={216}
                 className="w-full max-w-sm mx-auto rounded-lg shadow-lg mb-6"
               />
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">
                 Government of India
               </h2>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 Secure Portal for Government Officials and Law Enforcement
               </p>
             </div>
           </div>
 
           {/* Right side - Login Form */}
-          <div className="md:w-1/2 p-8">
+          <div className="md:w-1/2 p-8 bg-card">
             <div className="max-w-md mx-auto">
               <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-3xl font-bold text-foreground">
                   Admin Portal
                 </h1>
-                <p className="text-gray-600 mt-2">
+                <p className="text-muted-foreground mt-2">
                   Access your admin dashboard
                 </p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 {error && (
-                  <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-md">
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-400 px-4 py-3 rounded-md">
                     {error}
                   </div>
                 )}
@@ -99,7 +96,7 @@ const Login = () => {
                   <div>
                     <label
                       htmlFor="username"
-                      className="block text-sm font-medium text-gray-700 mb-1"
+                      className="block text-sm font-medium text-foreground mb-1"
                     >
                       Username
                     </label>
@@ -118,7 +115,7 @@ const Login = () => {
                   <div>
                     <label
                       htmlFor="password"
-                      className="block text-sm font-medium text-gray-700 mb-1"
+                      className="block text-sm font-medium text-foreground mb-1"
                     >
                       Password
                     </label>
@@ -137,7 +134,7 @@ const Login = () => {
 
                 <Button
                   type="submit"
-                  className="w-full bg-[#2A777C] hover:bg-[#236368] text-white"
+                  className="w-full bg-[#2A777C] hover:bg-[#236368] dark:bg-cyan-700 dark:hover:bg-cyan-800 text-white"
                   disabled={isLoading}
                 >
                   {isLoading ? "Logging in..." : "Login"}
@@ -145,7 +142,7 @@ const Login = () => {
               </form>
 
               <div className="mt-6 text-center">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   Admin access only. Contact system administrator for access.
                 </p>
               </div>

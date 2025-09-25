@@ -13,7 +13,6 @@ export default withAuth(
     },
   }
 );
-
 export const config = {
   matcher: [
     /*
@@ -24,7 +23,8 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder
+     * - .jpg images
      */
-    "/((?!api/auth|login|_next/static|_next/image|favicon.ico|public).*)",
+    "/((?!api/auth|login|_next/static|_next/image|favicon.ico|public|.*\\.jpg$).*)",
   ],
 };

@@ -45,8 +45,10 @@ export function LayoutProvider({ children }: LayoutProviderProps) {
   }
 
   return (
-    <div className="p-4 flex justify-end">
-      <ModeToggle />
+    <div className="relative">
+      <div className="absolute top-4 right-4 z-10">
+        <ModeToggle />
+      </div>
       {children}
     </div>
   );
