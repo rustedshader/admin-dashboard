@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { useSessionValidation } from "@/hooks/useAuth";
+import { ModeToggle } from "./Modetoggle";
 
 interface LayoutProviderProps {
   children: React.ReactNode;
@@ -30,7 +31,10 @@ export function LayoutProvider({ children }: LayoutProviderProps) {
           <div className="flex h-full">
             <div className="flex-1">
               <div className="p-4 lg:p-6">
-                <SidebarTrigger className="mb-4" />
+                <div className="flex items-center justify-between mb-4">
+                  <SidebarTrigger />
+                  <ModeToggle />
+                </div>
                 {children}
               </div>
             </div>
@@ -40,6 +44,10 @@ export function LayoutProvider({ children }: LayoutProviderProps) {
     );
   }
 
-  // For login page and unauthenticated users
-  return <>{children}</>;
+  return (
+    <div className="p-4 flex justify-end">
+      <ModeToggle />
+      {children}
+    </div>
+  );
 }
