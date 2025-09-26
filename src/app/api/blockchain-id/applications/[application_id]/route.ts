@@ -3,7 +3,7 @@ import { API_ENDPOINTS, buildApiUrl } from "@/lib/api";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { application_id: string } }
+  { params }: { params: Promise<{ application_id: string }> }
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -15,7 +15,8 @@ export async function POST(
       );
     }
 
-    const applicationId = parseInt(params.application_id);
+    const resolvedParams = await params;
+    const applicationId = parseInt(resolvedParams.application_id);
     if (isNaN(applicationId)) {
       return NextResponse.json(
         { error: "Invalid application ID" },
@@ -62,7 +63,7 @@ export async function POST(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { application_id: string } }
+  { params }: { params: Promise<{ application_id: string }> }
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -74,7 +75,8 @@ export async function PUT(
       );
     }
 
-    const applicationId = parseInt(params.application_id);
+    const resolvedParams = await params;
+    const applicationId = parseInt(resolvedParams.application_id);
     if (isNaN(applicationId)) {
       return NextResponse.json(
         { error: "Invalid application ID" },
