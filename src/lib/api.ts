@@ -81,13 +81,13 @@ export const API_ENDPOINTS = {
   // Activities endpoints
   activities: {
     offline: {
-      list: "/offline_activities/",
-      create: "/offline_activities/",
-      details: (activityId: number) => `/offline_activities/${activityId}`,
-      update: (activityId: number) => `/offline_activities/${activityId}`,
-      delete: (activityId: number) => `/offline_activities/${activityId}`,
-      route: (activityId: number) => `/offline_activities/${activityId}/route`,
-      addRoute: "/offline_activities/route-data",
+      list: "/offline-activities/",
+      create: "/offline-activities/",
+      details: (activityId: number) => `/offline-activities/${activityId}`,
+      update: (activityId: number) => `/offline-activities/${activityId}`,
+      delete: (activityId: number) => `/offline-activities/${activityId}`,
+      route: (activityId: number) => `/offline-activities/${activityId}/route`,
+      addRoute: "/offline-activities/route-data",
     },
     online: {
       list: "/online-activities/",

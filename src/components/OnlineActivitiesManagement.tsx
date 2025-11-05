@@ -763,7 +763,6 @@ export function OnlineActivitiesManagement() {
                       <TableCell>
                         {activity.cost_per_person ? (
                           <div className="flex items-center space-x-1">
-                            <DollarSign className="w-3 h-3 text-muted-foreground" />
                             <span className="text-sm">
                               ₹{activity.cost_per_person}
                             </span>

@@ -76,15 +76,15 @@ const ClientSideMap = ({
   return (
     <div className="w-full h-full rounded-lg border border-gray-300 overflow-hidden">
       <MapContainer
-        center={[26.2041, 92.9376]} // Northeast India center
-        zoom={7}
+        center={[30.3165, 78.0322]} // Dehradun, Uttarakhand
+        zoom={12}
         style={{ height: "100%", width: "100%" }}
         maxBounds={[
-          [20.0, 85.0], // Southwest
-          [30.0, 100.0], // Northeast
+          [20.0, 68.0], // Southwest
+          [36.0, 98.0], // Northeast
         ]}
         maxBoundsViscosity={1.0}
-        minZoom={6}
+        minZoom={5}
         maxZoom={18}
         scrollWheelZoom={true}
         doubleClickZoom={true}

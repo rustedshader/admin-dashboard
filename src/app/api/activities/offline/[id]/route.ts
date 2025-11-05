@@ -15,7 +15,7 @@ export async function GET(
     }
 
     const { id } = await params;
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/offline_activities/${id}`;
+    const url = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/offline-activities/${id}`;
 
     const response = await fetch(url, {
       headers: {
@@ -64,7 +64,7 @@ export async function PUT(
 
     const { id } = await params;
     const activityData = await request.json();
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/offline_activities/${id}`;
+    const url = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/offline-activities/${id}`;
 
     const response = await fetch(url, {
       method: "PUT",
@@ -114,7 +114,7 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/offline_activities/${id}`;
+    const url = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/offline-activities/${id}`;
 
     const response = await fetch(url, {
       method: "DELETE",

@@ -271,7 +271,7 @@ export default function AddGeofencingPage() {
                   mode="create"
                   onPolygonCreated={handlePolygonCreated}
                   existingAreas={[]}
-                  center={[26.1445, 91.7362]} // Guwahati, North East India
+                  center={[30.3165, 78.0322]} // Dehradun, Uttarakhand
                   zoom={12}
                 />
               </div>

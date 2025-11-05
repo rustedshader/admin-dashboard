@@ -111,7 +111,7 @@ const RouteMap = ({
 
   return (
     <MapContainer
-      center={[26.183153, 91.671219] as LatLngTuple}
+      center={[30.3165, 78.0322] as LatLngTuple}
       zoom={13}
       style={{ height: "100%", width: "100%" }}
       scrollWheelZoom={true}
