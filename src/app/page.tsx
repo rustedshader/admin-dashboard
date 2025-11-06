@@ -53,6 +53,7 @@ interface TripLocation {
   latitude: number;
   longitude: number;
   timestamp: string;
+  trip_status?: string;
   accuracy?: number;
   altitude?: number;
   speed?: number;
@@ -159,16 +160,26 @@ const Home = () => {
         const data = await tripLocationsRes.value.json();
         console.log("Trip locations data:", data); // Debug log
 
-        // Ensure we always set an array
-        let locationsArray = [];
-        if (Array.isArray(data)) {
-          locationsArray = data;
-        } else if (data.locations && Array.isArray(data.locations)) {
-          locationsArray = data.locations;
-        } else if (data.data && Array.isArray(data.data)) {
-          locationsArray = data.data;
+        // Transform the API response to match our expected format
+        // API returns: { trip_locations: [{ trip_id, user_id, tourist_id, latest_location: { latitude, longitude, timestamp } }] }
+        let locationsArray: TripLocation[] = [];
+
+        if (data.trip_locations && Array.isArray(data.trip_locations)) {
+          // Filter out trips without locations and transform the data
+          locationsArray = data.trip_locations
+            .filter((trip: any) => trip.latest_location !== null)
+            .map((trip: any) => ({
+              trip_id: trip.trip_id,
+              user_id: trip.user_id,
+              user_name: trip.tourist_id || `Tourist ${trip.tourist_id}`,
+              latitude: trip.latest_location.latitude,
+              longitude: trip.latest_location.longitude,
+              timestamp: trip.latest_location.timestamp,
+              trip_status: trip.trip_status,
+            }));
         }
 
+        console.log("Transformed locations:", locationsArray); // Debug log
         setTripLocations(locationsArray);
       } else {
         console.error("Failed to fetch trip locations:", tripLocationsRes);
@@ -283,7 +294,9 @@ const Home = () => {
         {/* Header */}
         <div className="bg-primary h-35 flex p-2 items-center justify-between">
           <div>
-            <h1 className="text-3xl text-white font-bold">Tourism Admin Dashboard</h1>
+            <h1 className="text-3xl text-white font-bold">
+              Tourism Admin Dashboard
+            </h1>
             <p className="text-primary-foreground">
               Real-time monitoring and management system
             </p>
@@ -457,6 +470,11 @@ const Home = () => {
                                 Trip {location.trip_id}
                               </Badge>
                             </div>
+                            {location.trip_status && (
+                              <div className="mb-2">
+                                {getStatusBadge(location.trip_status)}
+                              </div>
+                            )}
                             <div className="space-y-1 text-xs text-muted-foreground">
                               <p>Lat: {location.latitude.toFixed(6)}</p>
                               <p>Lng: {location.longitude.toFixed(6)}</p>

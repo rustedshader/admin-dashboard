@@ -10,6 +10,7 @@ interface TripLocation {
   latitude: number;
   longitude: number;
   timestamp: string;
+  trip_status?: string;
   accuracy?: number;
 }
 
@@ -137,6 +138,11 @@ const ClientSideTripMap = ({
                   <p>
                     <strong>Trip ID:</strong> {location.trip_id}
                   </p>
+                  {location.trip_status && (
+                    <p>
+                      <strong>Status:</strong> {location.trip_status}
+                    </p>
+                  )}
                   <p>
                     <strong>Location:</strong> {location.latitude.toFixed(6)},{" "}
                     {location.longitude.toFixed(6)}
