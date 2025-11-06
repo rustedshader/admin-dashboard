@@ -132,9 +132,26 @@ const Home = () => {
         const data = await activeTripsRes.value.json();
         console.log("Active trips data:", data); // Debug log
 
-        // Ensure we always set an array
-        let tripsArray = [];
-        if (Array.isArray(data)) {
+        // Transform the API response to match our expected format
+        // API returns: { active_trips: [{ id, user_id, itinerary_id, tourist_id, status, created_at, updated_at }] }
+        let tripsArray: ActiveTrip[] = [];
+
+        if (data.active_trips && Array.isArray(data.active_trips)) {
+          tripsArray = data.active_trips.map((trip: any) => ({
+            trip_id: trip.id,
+            user_id: trip.user_id,
+            user_name: trip.tourist_id || `Tourist ${trip.tourist_id}`,
+            user_phone: undefined,
+            trip_type: trip.itinerary_id ? "Itinerary" : "Custom",
+            status: trip.status,
+            current_phase: undefined,
+            destination: undefined,
+            started_at: trip.created_at,
+            expected_end: undefined,
+            created_at: trip.created_at,
+            updated_at: trip.updated_at,
+          }));
+        } else if (Array.isArray(data)) {
           tripsArray = data;
         } else if (data.trips && Array.isArray(data.trips)) {
           tripsArray = data.trips;
@@ -142,6 +159,7 @@ const Home = () => {
           tripsArray = data.data;
         }
 
+        console.log("Transformed active trips:", tripsArray); // Debug log
         setActiveTrips(tripsArray);
         setDashboardStats((prev) => ({
           ...prev,
@@ -233,6 +251,7 @@ const Home = () => {
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       safe: { color: "bg-green-100 text-green-800", label: "Safe" },
+      ongoing: { color: "bg-green-100 text-green-800", label: "Ongoing" },
       visiting: { color: "bg-blue-100 text-blue-800", label: "Visiting" },
       returning: { color: "bg-yellow-100 text-yellow-800", label: "Returning" },
       started: { color: "bg-purple-100 text-purple-800", label: "Started" },
@@ -401,9 +420,19 @@ const Home = () => {
                                   <p className="flex items-center gap-1">
                                     <Clock className="w-3 h-3" />
                                     Started:{" "}
-                                    {new Date(
-                                      trip.started_at
-                                    ).toLocaleDateString()}
+                                    {(() => {
+                                      const utcTimestamp =
+                                        trip.started_at.endsWith("Z")
+                                          ? trip.started_at
+                                          : trip.started_at + "Z";
+                                      return new Date(
+                                        utcTimestamp
+                                      ).toLocaleString("en-IN", {
+                                        timeZone: "Asia/Kolkata",
+                                        dateStyle: "short",
+                                        timeStyle: "short",
+                                      });
+                                    })()}
                                   </p>
                                 )}
                               </div>
@@ -479,10 +508,23 @@ const Home = () => {
                               <p>Lat: {location.latitude.toFixed(6)}</p>
                               <p>Lng: {location.longitude.toFixed(6)}</p>
                               <p>
-                                Updated:{" "}
-                                {new Date(
-                                  location.timestamp
-                                ).toLocaleTimeString()}
+                                Updated (IST):{" "}
+                                {(() => {
+                                  const utcTimestamp =
+                                    location.timestamp.endsWith("Z")
+                                      ? location.timestamp
+                                      : location.timestamp + "Z";
+                                  return new Date(utcTimestamp).toLocaleString(
+                                    "en-IN",
+                                    {
+                                      timeZone: "Asia/Kolkata",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                      second: "2-digit",
+                                      hour12: true,
+                                    }
+                                  );
+                                })()}
                               </p>
                               {location.accuracy && (
                                 <p>Accuracy: {location.accuracy}m</p>
