@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_BASE_URL = process.env.BACKEND_API_URL;
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
 export async function POST(
   request: NextRequest,
@@ -19,16 +19,25 @@ export async function POST(
     const resolvedParams = await params;
     const { alert_id } = resolvedParams;
 
+    console.log(
+      `Resolving alert ${alert_id} at ${API_BASE_URL}/alerts/${alert_id}/resolve`
+    );
+
     const response = await fetch(`${API_BASE_URL}/alerts/${alert_id}/resolve`, {
       method: "POST",
       headers: {
         Authorization: authHeader,
         "Content-Type": "application/json",
+        accept: "application/json",
       },
     });
 
     if (!response.ok) {
       const errorData = await response.text();
+      console.error(
+        `Backend API error: ${response.status} - ${response.statusText}`,
+        errorData
+      );
       return NextResponse.json(
         {
           error: `Backend API error: ${response.statusText}`,
@@ -43,7 +52,10 @@ export async function POST(
   } catch (error) {
     console.error("Error proxying to backend API:", error);
     return NextResponse.json(
-      { error: "Failed to resolve alert" },
+      {
+        error: "Failed to resolve alert",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }
